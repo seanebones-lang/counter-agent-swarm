@@ -14,7 +14,8 @@ These are separate observations with overlapping tests, not additive totals.
 
 The [original packaged CI](https://github.com/seanebones-lang/counter-agent-swarm/actions/runs/40060498003)
 retains the earlier 69-test Ubuntu/macOS Python 3.13 baseline. Keep that history
-separate from the expanded 76-test suite. For reproduction and current limits,
+separate from the 76-test CI checkpoint and the current 81-test local suite.
+For reproduction and current limits,
 use the [pilot guide](PILOT_TEST_GUIDE.md), [Linux lab guide](LINUX_NATIVE_LAB.md)
 and the detailed checkpoints below. The public glue is Apache-2.0; Mothership
 remains private and is not distributed in the public tester kit.
@@ -34,8 +35,9 @@ userspace with Rosetta. This is not a native x86-64 performance result or a WSL
 server test. All integration tests ran as UID 10001 with synthetic requests and
 zero live model calls. The Linux installed regression run passed 101 tests with
 one optional native test skipped; native scenarios were executed separately.
-The newer public component subset has 76 passing local tests, including lab
-access-boundary checks. These scopes overlap and must not be added together.
+The current public component subset has 81 passing local tests, including lab
+access-boundary checks and the queue recovery drill. These scopes overlap and
+must not be added together.
 
 The [scoped validation record](linux-lab-validation.json) retains engine/artifact
 hashes, scenario outcomes and limits. Tester-kit inspection confirmed the kit

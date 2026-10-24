@@ -47,7 +47,7 @@ python3.13 -m venv .venv
 .venv/bin/python scripts/collect_component_results.py --out ./component-results
 ```
 
-The collector runs the explicit public subset, currently **76 tests**, and writes
+The collector runs the explicit public subset, currently **81 tests**, and writes
 `results.json`, `test-output.txt` and `feedback.md`. It uploads nothing. Inspect and
 redact the files before sharing. Use a new output directory for another run.
 Do not run the entire pytest directory without the separately authorized native

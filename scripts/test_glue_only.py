@@ -13,7 +13,7 @@ TESTS = [
     "tests/test_detection_gate.py", "tests/test_proxy.py", "tests/test_openai_analyst.py",
     "tests/test_release_resources.py", "tests/test_queue_cli.py", "tests/test_sandbox_intel.py",
     "tests/test_worker_commands.py",
-    "tests/test_linux_lab.py",
+    "tests/test_linux_lab.py", "tests/test_queue_recovery.py",
     "tests/test_runtime.py::test_queue_deduplicates_claims_and_requires_explicit_pending_resume",
     "tests/test_runtime.py::test_ingress_requires_private_token_and_rejects_payload_or_routing",
 ]

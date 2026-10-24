@@ -7,13 +7,15 @@ These are separate observations with overlapping tests, not additive totals.
 | Evidence | Recorded result | What it establishes and what it leaves open |
 | --- | --- | --- |
 | [Current packaged component CI](https://github.com/seanebones-lang/counter-agent-swarm/actions/runs/40133102523) | 76 public tests passed in each of three ordinary-user jobs: Ubuntu Python 3.12/3.13 and macOS Python 3.13. | Public source distribution builds and installs outside the checkout without Mothership. Does not exercise private native engines or live model judgment. |
+| [Local installed queue recovery drill](queue-recovery-validation.json) | 81 public tests passed on macOS arm64, Python 3.12, including five new queue recovery/pressure cases. | Actual child-process interruption, in-process intake under pressure and isolated SQLite queue backup/restore. This local result is separate from the 76-test CI checkpoint and does not establish native engine or production recovery. |
 | [Pankaj Basnet's external component report](../CONTRIBUTORS.md#pankaj-basnet) | Reported 69 earlier public tests passing on Ubuntu 24.04/WSL2, Python 3.12.3, as root. | External installation feedback improved setup instructions, glossary and the ordinary-user follow-up. This is self-reported component evidence; ordinary-user WSL and his native-integration test remain pending at this checkpoint. Private report files and contact details are not published. |
 | [NextEleven-controlled Linux regression and native lab](linux-lab-validation.json) | 101 installed regression tests passed, one optional duplicate native test skipped; six native scenarios executed separately. | Real unmodified Mothership 0.3.0 and released DeadBolt 2.0.0, UID 10001, synthetic requests. Linux amd64 userspace ran under Rosetta in an aarch64 Linux VM on Apple Silicon; this is not native x86-64 performance or WSL server validation. |
 | [Native lab scenario and transport details](LINUX_NATIVE_LAB.md) | Kill, deny, revoke, rejected approval, pending approval across restart and unavailable/damaged/missing gate cases passed. An additional native kill passed through temporary HTTPS. | Operator-controlled two-role checks with a deterministic analyst and zero live model calls. This is separate from an external tester's observations; it is not security certification, hostile-payload isolation or production validation. |
 
 The [original packaged CI](https://github.com/seanebones-lang/counter-agent-swarm/actions/runs/40060498003)
 retains the earlier 69-test Ubuntu/macOS Python 3.13 baseline. Keep that history
-separate from the expanded 76-test suite. For reproduction and current limits,
+separate from the 76-test CI checkpoint and the current 81-test local suite.
+For reproduction and current limits,
 use the [pilot guide](PILOT_TEST_GUIDE.md), [Linux lab guide](LINUX_NATIVE_LAB.md)
 and the detailed checkpoints below. The public glue is Apache-2.0; Mothership
 remains private and is not distributed in the public tester kit.
@@ -33,8 +35,9 @@ userspace with Rosetta. This is not a native x86-64 performance result or a WSL
 server test. All integration tests ran as UID 10001 with synthetic requests and
 zero live model calls. The Linux installed regression run passed 101 tests with
 one optional native test skipped; native scenarios were executed separately.
-The newer public component subset has 76 passing local tests, including lab
-access-boundary checks. These scopes overlap and must not be added together.
+The current public component subset has 81 passing local tests, including lab
+access-boundary checks and the queue recovery drill. These scopes overlap and
+must not be added together.
 
 The [scoped validation record](linux-lab-validation.json) retains engine/artifact
 hashes, scenario outcomes and limits. Tester-kit inspection confirmed the kit

@@ -1,0 +1,101 @@
+{
+  "schema_version": 1,
+  "scope": "local-installed-public-queue-recovery-and-component-regression",
+  "checked_at_utc": "2026-10-24T22:22:24.161787+00:00",
+  "platform": {
+    "os": "Darwin",
+    "os_release": "25.6.0",
+    "architecture": "arm64",
+    "python": "3.12.14"
+  },
+  "dependencies": {
+    "n11-counter-agent-swarm": "0.1.0",
+    "pytest": "9.1.1",
+    "mcp": "2.3.0",
+    "fastapi": "0.162.0",
+    "starlette": "1.10.0",
+    "httpx": "0.28.1",
+    "pydantic": "2.14.1",
+    "uvicorn": "0.54.0"
+  },
+  "exit_code": 0,
+  "timed_out": false,
+  "seconds": 5.69,
+  "status": "passed",
+  "glue_source_sha256": "0de3e51286a8dece1b1bfc0aac41bc4cd701970abcd36ff42278982181715887",
+  "log_sha256": "98f6a00df11f1d45c6bfe981bc9454501c106bb32f526a8c210d60e40c5b161e",
+  "log_truncated": false,
+  "home_and_checkout_paths_redacted": true,
+  "native_engines_tested": false,
+  "live_model_judgment_tested": false,
+  "independent_truth_or_identity_verification": false,
+  "source_base_commit": "7a35c50e20d5787b3c0cef4037c19497f105026e",
+  "tested_artifact_note": "Built from the source base plus the file changes identified below, before this validation record was added. No runtime source changed.",
+  "test_input_sha256": {
+    "tests/test_queue_recovery.py": "febe505f955d89ba024d9e84dfdc1f60a3cbab545f0fd6cf5d009fa30afc7e03",
+    "scripts/test_glue_only.py": "8b9423c48707d534565619fbaa7b82c833f4dccdc37b0b2503d23d09f810b73e",
+    "docs/QUEUE_OPERATIONS.md": "4227ed65871b5da7c9dae7458f5e8e92de35586aa14c1d5483a3a7a734d5f87b",
+    "docs/STATUS.md": "94b9b3a3b7fe6d7d2d156079ca1976365a38fd34190db303b6e6538bc5a965b4"
+  },
+  "artifacts": [
+    {
+      "name": "n11_counter_agent_swarm-0.1.0-py3-none-any.whl",
+      "sha256": "bfec52c6c7e138353826cefd8eefac018327cf5a533312d57238c887c0f7cab7",
+      "bytes": 41783
+    },
+    {
+      "name": "n11_counter_agent_swarm-0.1.0.tar.gz",
+      "sha256": "a150bedb60fdcd9178b90b99a6d2ce19992e78819104556ef6ce270104579630",
+      "bytes": 112709
+    }
+  ],
+  "installation": {
+    "wheel_installed_outside_checkout": true,
+    "source_distribution_extracted_outside_checkout": true,
+    "new_tests_and_explicit_public_suite_present_in_sdist": true,
+    "mothership_not_installed": true,
+    "effective_uid_nonzero": true
+  },
+  "result": {
+    "public_tests_passed": 81,
+    "new_recovery_cases": 5,
+    "pytest_summary": "81 passed in 5.40s",
+    "runtime_defects_demonstrated": 0,
+    "runtime_source_changes": false
+  },
+  "cases": [
+    {
+      "case": "killed_claim",
+      "observed": "SIGKILL after committed claim and fsynced inert marker; reopening and duplicate intake retain held IN_PROGRESS; no automatic or pending-resume claim"
+    },
+    {
+      "case": "archive_precommit_interruption",
+      "observed": "SIGKILL after file and directory fsync, before deletion; completed row and complete duplicate archive retained; queued, held and pending unchanged"
+    },
+    {
+      "case": "archive_postcommit_lost_receipt",
+      "observed": "SIGKILL after archive deletion commit before caller output; completed row removed, complete archive and all unsettled rows retained; destination reuse refused"
+    },
+    {
+      "case": "isolated_sqlite_backup_restore",
+      "observed": "SQLite backup captures committed WAL records; isolated restore equals every original record/state/phase/approval/code; original pending approval retained and held work not claimable"
+    },
+    {
+      "case": "intake_pressure",
+      "observed": "SQLite write lock and 2048-row capacity return ingress 503; duplicate at capacity returns 202; suspicious proxy request at full capacity returns 403 without admission or upstream forwarding"
+    }
+  ],
+  "cleanup": {
+    "owned_child_processes_reaped": true,
+    "disposable_recovery_fixture_directories_removed": true,
+    "existing_vm_profiles_and_private_engine_files_untouched": true
+  },
+  "limits": [
+    "In-process ASGI HTTP rather than real sockets or sustained load",
+    "Queue claims and deterministic inert marker rather than native worker or provider effects",
+    "No Mothership or DeadBolt backup/restore, supervisor restart, encrypted off-host custody or filesystem power-loss drill",
+    "No live analyst calls, feeds, exploit detonation, production traffic, VM/container build, cloud deployment or public tunnel",
+    "Local macOS arm64 Python 3.12 observation; Linux/macOS CI for the expanded 81-test suite remains pending",
+    "Restored queue alone cannot establish consistency with engine effects since checkpoint; workers must remain disabled until operator reconciliation"
+  ]
+}

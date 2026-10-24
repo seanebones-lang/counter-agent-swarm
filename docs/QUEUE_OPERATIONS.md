@@ -53,6 +53,63 @@ nothing. Archival frees queue slots and reusable SQLite pages; it does not
 promise to shrink the database file or perform a secure erase. Filesystem and
 device durability still depend on the underlying storage honoring fsync.
 
+## Bounded recovery drill and backup boundary
+
+The [October 24 recovery receipt](queue-recovery-validation.json) records a
+public installed-package drill on macOS arm64 with synthetic state. Its five
+additional tests cover these boundaries:
+
+- A real child process is killed after a committed claim and a durable inert
+  effect marker. Reopening the queue and duplicate intake leave the record held;
+  neither ordinary claim nor explicit pending-resume claim selects it again.
+- A child is killed after an archive file and directory are fsynced but before
+  deletion, then separately after the deletion commits but before the caller
+  receives its receipt. The first case retains the completed row and duplicate
+  archive; the second retains the archive and removes only the completed row.
+  Pending approvals, held outcomes and queued work remain exact in both cases.
+  Reusing the archive destination fails without further queue changes.
+- SQLite's backup API captures a queue containing committed WAL data. Restoring
+  into a different owner-only directory preserves complete records, states,
+  phases, codes and original approval identifiers. Later live writes and claims
+  do not alter that snapshot. An explicitly resumed pending claim retains its
+  original approval; held work is still ineligible for claim.
+- An actual SQLite write lock and then a full queue return HTTP 503 at ingress.
+  Duplicate intake at capacity still returns 202. A suspicious request whose
+  intake is full still returns 403 without admission or upstream forwarding.
+
+Run the focused drill from the public source distribution after installing it
+into a separate environment, with no `PYTHONPATH` pointing at the checkout:
+
+```sh
+python -m pytest -q -p no:cacheprovider tests/test_queue_recovery.py
+```
+
+It uses temporary directories and owned child processes only. It sends no
+network traffic to an application, engine or provider. The proxy/ingress HTTP
+exchange is in process; real sockets, a supervisor restart and native approval
+execution are separate validation scopes.
+
+For an operational backup, coordinate intake, workers and operator maintenance
+at a known checkpoint. Use SQLite's online backup API (`Connection.backup`) or a
+SQLite-supported consistent backup method. Do not copy only a live `.sqlite`
+file: its committed rows may still be in `-wal`. Write a new private destination,
+verify `PRAGMA integrity_check`, record its digest and checkpoint time, and retain
+the original files until reconciliation is complete. Backup contents require
+private custody just like the active queue. The automated drill verifies logical
+SQLite snapshot/restore behavior; it does not establish encrypted backup custody,
+filesystem power-loss durability or a production recovery procedure.
+
+Restore first into a separate owner-only directory with workers and external
+effects disabled. Compare complete rows and original pending approvals against
+the saved checkpoint. Keep held/unknown outcomes held. Do not clear approvals,
+change event identifiers or requeue records to make them run. A queue backup
+alone cannot reconcile effects performed after its checkpoint: verify the
+matching Mothership approval/action receipts and DeadBolt state before enabling
+any worker. Restoring an older queued row without corresponding engine state
+can repeat already performed work. This drill does not restore either engine,
+credentials, active rules or application state, and does not close the full
+production recovery gate in [STATUS.md](STATUS.md).
+
 ## Public listener resource bounds
 
 The colocated supervisor starts only its private services first. It waits for a

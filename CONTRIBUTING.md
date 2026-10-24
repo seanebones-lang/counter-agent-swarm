@@ -15,7 +15,8 @@ Follow the [README quickstart](README.md#start-here-public-component-preview) an
 [pilot guide](docs/PILOT_TEST_GUIDE.md). Run the original source first. The
 collector produces a test report, log and feedback template locally and uploads
 nothing. A failing test or installation step is useful evidence; retain it before
-trying a change. Native Windows is unsupported; Python 3.13 is the tested version.
+trying a change. Native Windows is unsupported. See the pilot guide for tested
+Python environments, Ubuntu prerequisites and ordinary-user WSL instructions.
 
 For a public bug/test report include OS/version, CPU, Python, revision, first
 failing command, expected/actual behavior and a minimal inert reproduction.
@@ -51,6 +52,8 @@ repository's existing Apache-2.0 contribution terms; no extra CLA is required.
 
 ## Credit and privacy
 
+See [CONTRIBUTORS.md](CONTRIBUTORS.md) for agreed public acknowledgements.
+
 We are happy to acknowledge people who help as official project contributors
 and testers, with their agreement. Tell us the name or GitHub handle you want
 used and whether you want a public acknowledgement. Private email/feedback is
@@ -61,3 +64,15 @@ Optional Witness recording can retain returned reports and file hashes in a
 private local provenance record. It requires the tester's agreement and does
 not independently prove execution, identity or the truth of a report. No
 automatic upload or Witness submission is part of the test collector.
+
+## Using the open-source work
+
+You are welcome to use this public glue in learning, portfolio projects and
+commercial work under its existing Apache-2.0 license. When distributing it or
+derivatives, follow that license, including the applicable license, copyright,
+NOTICE and modification notices. There is no additional obligation to test for
+NextEleven in exchange for using the software.
+
+Other public NextEleven repositories and external dependencies have their own
+licenses; check each one. This invitation does not grant access to the private
+Mothership runtime or permission to imply NextEleven endorses a derivative.

@@ -6,9 +6,11 @@ Plan for 30–45 minutes. Stop whenever something is unclear or unexpected.
 
 ## Choose the actual available scope
 
-**Public component test:** Python 3.13 is the tested interpreter. macOS/Linux are
-the intended platforms; Windows is not supported by the current Unix worker
-and file-permission code. No account, model credential, purchase, Mothership
+**Public component test:** Packaged CI has tested Python 3.13 on macOS/Linux.
+An external tester also reported a passing Python 3.12.3 run on Ubuntu 24.04
+under WSL2, as root. That does not validate ordinary-user permissions or native
+Windows support. Native Windows is unsupported by the Unix worker and
+file-permission code. No account, model credential, purchase, Mothership
 source or DeadBolt executable is needed for this component suite.
 
 From an authorized copy of the glue repository:
@@ -18,6 +20,15 @@ python3.13 -m venv .venv
 .venv/bin/python -m pip install '.[test]'
 .venv/bin/python scripts/test_glue_only.py
 ```
+
+On Ubuntu 24.04, `python3.12` is another interpreter permitted by the package's
+Python >=3.11 requirement. A missing `ensurepip` error usually requires the
+matching Ubuntu `python3.12-venv` package through your normal authorized admin
+process. Run project installation and tests as an ordinary user, without sudo.
+Use a fresh extraction in your Linux home; GNU tar's `--no-same-owner` avoids
+restoring the macOS archive's owner metadata. Do not broadly change ownership
+of existing directories. See the focused [ordinary-user WSL follow-up](UNPRIVILEGED_WSL_FOLLOWUP.md)
+and [glossary](GLOSSARY.md).
 
 To run the same component suite and collect return files in one step, use
 `.venv/bin/python scripts/collect_component_results.py --out ./pankaj-results`

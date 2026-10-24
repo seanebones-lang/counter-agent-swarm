@@ -188,11 +188,12 @@
     "outbound_tcp_unreachable": true
   },
   "tests": {
-    "linux_installed_regressions": 100,
+    "linux_installed_regressions": 101,
     "linux_optional_native_pytest_skipped": 1,
     "separate_native_http_scenarios": 6,
     "additional_https_native_scenarios": 1,
-    "current_public_component_tests_local_mac": 76
+    "current_public_component_tests_local_mac": 76,
+    "linux_regression_source_revision": "14ecdf9f6c9a81c0e5835f68d8bd3ca8dbcf304e"
   },
   "tester_kit": {
     "sha256": "b5237deb6025ce17db346d4ab9dc11cbbc5f78806c91d6aa268cfe5cc63acae4",
@@ -211,10 +212,20 @@
     "No production deployment, load or recovery certification"
   ],
   "evidence_files_sha256": {
+    "final-linux-regressions.json": "8e61d1ebf995070c26f744eb4db4c2c6501fbadddd24558461e690aa3ec5e53c",
     "tester-kit-check.json": "decb0255987c18805500d45f126c2c1d7bffa12d01ae5f7055b8c680239c99d8",
     "native-cancellation.json": "f1f70ebc8c0761ed3f75e1dffdbcf9f7a5365b13957e9d7bb100ba6c5e84aa7f",
+    "relaunch-plan.json": "b0561d62353e9ae430f6cbc478099614c46a69f103410cc62d8c81bbc1cb4f49",
     "native-https-smoke.json": "19413d2f8ada464e769b09e032b59dc099958b3d927b630c110785c15a1f3311",
     "linux-dependencies.txt": "8ea1361328c4c4a81b9945706d235833ef51b4261c10c6fc5e157798d4a7711f",
     "native-http-smoke.json": "f8d2e4d31066dec3f2c89a4d37fb53afb0a50d79f610cd8da35ccddf3b376533"
+  },
+  "teardown": {
+    "temporary_https_tunnel_stopped": true,
+    "local_port_closed": true,
+    "labelled_container_network_and_volume_absent": true,
+    "session_key_files_removed": true,
+    "fresh_start_authenticated_plan_and_stop_verified": true,
+    "private_local_image_retained_for_fresh_session": true
   }
 }

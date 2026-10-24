@@ -13,7 +13,7 @@ remained on loopback. The exact extracted tester client reached that HTTPS plan.
 The test host was an aarch64 Linux VM on Apple Silicon, running Linux amd64
 userspace with Rosetta. This is not a native x86-64 performance result or a WSL
 server test. All integration tests ran as UID 10001 with synthetic requests and
-zero live model calls. The Linux installed regression run passed 100 tests with
+zero live model calls. The Linux installed regression run passed 101 tests with
 one optional native test skipped; native scenarios were executed separately.
 The newer public component subset has 76 passing local tests, including lab
 access-boundary checks. These scopes overlap and must not be added together.

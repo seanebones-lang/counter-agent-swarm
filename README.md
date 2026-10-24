@@ -18,6 +18,37 @@ Created by **NextEleven**. The public component suite can be evaluated without
 Mothership or a model credential; full native integration needs separately
 authorized engine access. See the [pilot test guide](docs/PILOT_TEST_GUIDE.md).
 
+## Start here: public component preview
+
+**Source:** https://github.com/seanebones-lang/counter-agent-swarm
+
+Volunteer testers and contributors are welcome. Participation is unpaid, with
+public contributor/tester credit by agreement. Read [CONTRIBUTING.md](CONTRIBUTING.md)
+for scope, results, private security reporting and attribution.
+
+Python 3.13 is the tested interpreter. Use a new local environment on macOS or
+Linux; native Windows is not supported by the Unix worker/permission code.
+No model key, private engine, cloud account or production application is needed:
+
+```sh
+git clone https://github.com/seanebones-lang/counter-agent-swarm.git
+cd counter-agent-swarm
+python3.13 -m venv .venv
+.venv/bin/python -m pip install '.[test]'
+.venv/bin/python scripts/collect_component_results.py --out ./component-results
+```
+
+The collector runs the explicit public subset, currently **69 tests**, and writes
+`results.json`, `test-output.txt` and `feedback.md`. It uploads nothing. Inspect and
+redact the files before sharing. Use a new output directory for another run.
+Do not run the entire pytest directory without the separately authorized native
+dependencies: it contains Mothership-specific tests. Public component results
+do not establish actual native integration, live model judgment or deployment.
+
+Source distributions include tests, scripts, examples and instructions. The
+smaller wheel contains the glue runtime only. Public CI builds and installs the
+source distribution outside the checkout before running the component suite.
+
 ## Architecture
 
 ```text
@@ -47,7 +78,7 @@ inside the glue-owned `swarm.analyze` tool registered into an unmodified Mothers
 application bootstrap. There is no invented Mothership plugin/configuration API.
 The existing dispatcher supplies scope checks, idempotency, approvals and evidence.
 
-## Run the no-cost native proof
+## Optional native proof with separately authorized dependencies
 
 For component testing without the private runtime, install `.[test]` into a new
 environment and run `python scripts/test_glue_only.py`. This deliberately excludes

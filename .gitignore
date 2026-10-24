@@ -10,3 +10,5 @@ build/
 dist/
 *.log
 dependency-artifacts/
+component-results*/
+pankaj-results*/

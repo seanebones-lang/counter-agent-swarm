@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Private security reporting
+    url: https://github.com/seanebones-lang/counter-agent-swarm/blob/main/SECURITY.md
+    about: Read the private reporting instructions before sharing a vulnerability.

@@ -1,0 +1,75 @@
+name: Public component preview
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: components-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  packaged-components:
+    name: Packaged components (${{ matrix.os }}, Python 3.13)
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.13'
+      - name: Build and inspect source distribution
+        run: |
+          python -m pip install build
+          python -m build --sdist --outdir dist
+          python - <<'PY'
+          import os, pathlib, tarfile
+          archive, = pathlib.Path('dist').glob('*.tar.gz')
+          destination = pathlib.Path(os.environ['RUNNER_TEMP']) / 'swarm-public-source'
+          destination.mkdir(mode=0o700)
+          with tarfile.open(archive) as source:
+              names = source.getnames()
+              assert not any('/.env' in p or '/private/' in p or '/mothership/' in p for p in names)
+              assert any(p.endswith('/scripts/collect_component_results.py') for p in names)
+              assert any(p.endswith('/examples/mothership-agent.json') for p in names)
+              assert any(p.endswith('/CONTRIBUTING.md') for p in names)
+              source.extractall(destination, filter='data')
+          root, = destination.iterdir()
+          with open(os.environ['GITHUB_ENV'], 'a') as output:
+              output.write('PREVIEW_SOURCE=' + str(root) + '\n')
+          PY
+      - name: Install packaged public dependencies
+        run: python -m pip install "$PREVIEW_SOURCE[test]"
+      - name: Verify engine-free installed import
+        working-directory: ${{ env.PREVIEW_SOURCE }}
+        run: |
+          python - <<'PY'
+          import importlib.util, pathlib, counter_swarm
+          assert importlib.util.find_spec('mothership') is None
+          assert not pathlib.Path(counter_swarm.__file__).resolve().is_relative_to(pathlib.Path.cwd())
+          PY
+      - name: Collect public component results
+        working-directory: ${{ env.PREVIEW_SOURCE }}
+        run: python scripts/collect_component_results.py --out "$RUNNER_TEMP/component-results"
+      - name: Show bounded component test summary
+        if: always()
+        run: |
+          python - <<'PY'
+          import os, pathlib
+          root = pathlib.Path(os.environ['RUNNER_TEMP']) / 'component-results'
+          for name in ['results.json', 'test-output.txt']:
+              path = root / name
+              if path.exists():
+                  print(name + '\n' + path.read_text()[-16000:])
+          PY

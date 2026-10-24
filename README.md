@@ -19,7 +19,8 @@ protected real application has been changed or deployed by this project.
 Created by **NextEleven**. The public component suite can be evaluated without
 Mothership or a model credential; full native integration needs separately
 authorized engine access. See the [pilot test guide](docs/PILOT_TEST_GUIDE.md),
-[glossary](docs/GLOSSARY.md) and [contributors and testers](CONTRIBUTORS.md).
+[glossary](docs/GLOSSARY.md), [validation evidence](docs/STATUS.md#evidence-at-a-glance-october-24-2026)
+and [contributors and testers](CONTRIBUTORS.md).
 
 ## Start here: public component preview
 
@@ -29,10 +30,12 @@ Volunteer testers and contributors are welcome. Participation is unpaid, with
 public contributor/tester credit by agreement. Read [CONTRIBUTING.md](CONTRIBUTING.md)
 for scope, results, private security reporting and attribution.
 
-Packaged CI has tested Python 3.13 on macOS and Linux. An external tester also
-reported Python 3.12.3 passing on Ubuntu 24.04/WSL2 as root; ordinary-user WSL
-verification remains a separate follow-up. See the pilot guide for Ubuntu venv
-prerequisites. Use a fresh ordinary-user environment; native Windows is not
+The [October 24 packaged CI run](https://github.com/seanebones-lang/counter-agent-swarm/actions/runs/40133102523)
+passed all **76 public component tests** as an ordinary user on Ubuntu with
+Python 3.12 and 3.13, and macOS with Python 3.13. An external tester separately
+reported the earlier 69-test suite passing with Python 3.12.3 on Ubuntu 24.04/WSL2
+as root; ordinary-user WSL verification remains a separate follow-up. See the
+pilot guide for Ubuntu venv prerequisites. Use a fresh ordinary-user environment; native Windows is not
 supported by the Unix worker/permission code.
 No model key, private engine, cloud account or production application is needed:
 
@@ -54,9 +57,11 @@ do not establish actual native integration, live model judgment or deployment.
 Source distributions include tests, scripts, examples and instructions. The
 smaller wheel contains the glue runtime only. Public CI builds and installs the
 source distribution outside the checkout before running the component suite.
-The first public run passed all 69 component tests on Ubuntu and macOS with
-Python 3.13: [packaged test results](https://github.com/seanebones-lang/counter-agent-swarm/actions/runs/40060498003).
-This does not validate Linux native-engine deployment or sandbox isolation.
+For history, the [first public run](https://github.com/seanebones-lang/counter-agent-swarm/actions/runs/40060498003)
+passed the earlier 69-test suite on Ubuntu and macOS with Python 3.13. Component
+CI does not validate native-engine deployment or sandbox isolation. The separate
+[validation evidence table](docs/STATUS.md#evidence-at-a-glance-october-24-2026)
+distinguishes these runs from the operator-hosted native lab and external reports.
 
 ## Architecture
 

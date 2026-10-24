@@ -1,5 +1,37 @@
 # Verified development checkpoint
 
+## October 24: operator-hosted Linux native lab
+
+The [private Linux lab](LINUX_NATIVE_LAB.md) now runs real unmodified Mothership
+0.3.0 and released DeadBolt 2.0.0 Linux x86-64 behind separate tester/operator
+credentials. Six native scenarios passed through the restricted HTTP interface:
+kill, deny, revoke, rejected approval, pending approval across a Mothership
+restart, and unavailable/damaged/missing gate prerequisites. A native kill also
+passed through a temporary verified HTTPS tunnel while the operator credential
+remained on loopback. The exact extracted tester client reached that HTTPS plan.
+
+The test host was an aarch64 Linux VM on Apple Silicon, running Linux amd64
+userspace with Rosetta. This is not a native x86-64 performance result or a WSL
+server test. All integration tests ran as UID 10001 with synthetic requests and
+zero live model calls. The Linux installed regression run passed 101 tests with
+one optional native test skipped; native scenarios were executed separately.
+The newer public component subset has 76 passing local tests, including lab
+access-boundary checks. These scopes overlap and must not be added together.
+
+The [scoped validation record](linux-lab-validation.json) retains engine/artifact
+hashes, scenario outcomes and limits. Tester-kit inspection confirmed the kit
+contains only client, instructions, feedback form and license/hash files. No
+private engine or credential was distributed. Native cancellation returned
+through cleanup with no child engine processes left. The temporary public
+tunnel and disposable session were closed after verification; a fresh attended
+session is needed for a tester. Pankaj has not yet performed this native test.
+
+Live analyst quality, actual threat-feed delivery, hostile-payload analysis,
+production deployment/load/recovery and independent adversarial assessment
+remain unvalidated. The native pilot uses a deterministic analyst fixture.
+
+## Earlier local integration checkpoint
+
 The first local Counter-Agent Swarm integration milestone is implemented. This
 is a new glue repository; neither Mothership nor DeadBolt was forked or modified.
 
@@ -45,7 +77,7 @@ dedicated host; this repository supplies neither an exploit image nor a live
 detonation environment.
 
 The Dockerfile, supervisor and Railway instructions are a staging profile;
-container/runtime deployment, sustained attack load, actual backup restoration,
+production deployment, sustained attack load, actual backup restoration,
 private-origin bypass resistance and independent adversarial testing have not
 been validated. The Apache-2.0 glue repository was published on October 23, 2026:
 https://github.com/seanebones-lang/counter-agent-swarm . An anonymous HTTPS clone

@@ -12,7 +12,7 @@ the entire dependency stack open source.
 **Status: local synthetic integration proof, not production protection.** Real
 Mothership → stdio MCP → native DeadBolt kill/deny/revoke acceptance passes.
 The analyst in that proof is a deterministic test fixture. Live frontier-model
-analysis, hostile-payload detonation, Linux/container deployment, performance
+analysis, hostile-payload detonation, production deployment, performance
 under attack and independent adversarial evaluation remain unvalidated. No
 protected real application has been changed or deployed by this project.
 
@@ -44,7 +44,7 @@ python3.13 -m venv .venv
 .venv/bin/python scripts/collect_component_results.py --out ./component-results
 ```
 
-The collector runs the explicit public subset, currently **69 tests**, and writes
+The collector runs the explicit public subset, currently **76 tests**, and writes
 `results.json`, `test-output.txt` and `feedback.md`. It uploads nothing. Inspect and
 redact the files before sharing. Use a new output directory for another run.
 Do not run the entire pytest directory without the separately authorized native
@@ -59,6 +59,11 @@ Python 3.13: [packaged test results](https://github.com/seanebones-lang/counter-
 This does not validate Linux native-engine deployment or sandbox isolation.
 
 ## Architecture
+
+For an operator-hosted real-engine pilot that keeps Mothership private, see the
+[Linux native lab guide](docs/LINUX_NATIVE_LAB.md). Its public tester kit contains
+only a client and instructions; the private runtime image stays with the operator.
+Live analyst judgment and hostile-payload detonation remain separate scopes.
 
 ```text
 request → bounded deterministic proxy → fresh DeadBolt admission → fixed private origin
@@ -93,7 +98,7 @@ For component testing without the private runtime, install `.[test]` into a new
 environment and run `python scripts/test_glue_only.py`. This deliberately excludes
 native integration rather than silently substituting an imitation engine.
 
-Prerequisites: Python 3.13 (tested), a separately installed reviewed Mothership
+Prerequisites: Python 3.12 or 3.13 in the recorded tested environments, a separately installed reviewed Mothership
 0.3.0, native DeadBolt 2.0.0, and the dependencies in `pyproject.toml`. Install
 Mothership from your authorized source/artifact; do not install an unrelated
 similarly named public package.

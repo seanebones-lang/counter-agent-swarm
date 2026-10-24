@@ -18,7 +18,8 @@ protected real application has been changed or deployed by this project.
 
 Created by **NextEleven**. The public component suite can be evaluated without
 Mothership or a model credential; full native integration needs separately
-authorized engine access. See the [pilot test guide](docs/PILOT_TEST_GUIDE.md).
+authorized engine access. See the [pilot test guide](docs/PILOT_TEST_GUIDE.md),
+[glossary](docs/GLOSSARY.md) and [contributors and testers](CONTRIBUTORS.md).
 
 ## Start here: public component preview
 
@@ -28,8 +29,11 @@ Volunteer testers and contributors are welcome. Participation is unpaid, with
 public contributor/tester credit by agreement. Read [CONTRIBUTING.md](CONTRIBUTING.md)
 for scope, results, private security reporting and attribution.
 
-Python 3.13 is the tested interpreter. Use a new local environment on macOS or
-Linux; native Windows is not supported by the Unix worker/permission code.
+Packaged CI has tested Python 3.13 on macOS and Linux. An external tester also
+reported Python 3.12.3 passing on Ubuntu 24.04/WSL2 as root; ordinary-user WSL
+verification remains a separate follow-up. See the pilot guide for Ubuntu venv
+prerequisites. Use a fresh ordinary-user environment; native Windows is not
+supported by the Unix worker/permission code.
 No model key, private engine, cloud account or production application is needed:
 
 ```sh

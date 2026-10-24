@@ -1,5 +1,7 @@
 # Counter-Agent Swarm
 
+[![Public component preview](https://github.com/seanebones-lang/counter-agent-swarm/actions/workflows/public-components.yml/badge.svg)](https://github.com/seanebones-lang/counter-agent-swarm/actions/workflows/public-components.yml)
+
 Small defensive glue connecting deterministic request screening, an **external
 unmodified Mothership**, and **external DeadBolt 2.0.0**. One protected application
 per instance. No new dashboard. This repository is Apache-2.0; the dependencies
@@ -48,6 +50,9 @@ do not establish actual native integration, live model judgment or deployment.
 Source distributions include tests, scripts, examples and instructions. The
 smaller wheel contains the glue runtime only. Public CI builds and installs the
 source distribution outside the checkout before running the component suite.
+The first public run passed all 69 component tests on Ubuntu and macOS with
+Python 3.13: [packaged test results](https://github.com/seanebones-lang/counter-agent-swarm/actions/runs/40060498003).
+This does not validate Linux native-engine deployment or sandbox isolation.
 
 ## Architecture
 

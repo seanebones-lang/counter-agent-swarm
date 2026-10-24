@@ -47,8 +47,14 @@ detonation environment.
 The Dockerfile, supervisor and Railway instructions are a staging profile;
 container/runtime deployment, sustained attack load, actual backup restoration,
 private-origin bypass resistance and independent adversarial testing have not
-been validated. No public repository, registry release or cloud service was
-created. No live application traffic was changed.
+been validated. The Apache-2.0 glue repository was published on October 23, 2026:
+https://github.com/seanebones-lang/counter-agent-swarm . An anonymous HTTPS clone
+succeeded. Public CI built and installed the source distribution outside the
+checkout and passed all69 component tests on both Ubuntu and macOS with Python
+3.13: https://github.com/seanebones-lang/counter-agent-swarm/actions/runs/40060498003 .
+This establishes public component packaging, not Linux native-engine deployment.
+Mothership remains private. No package-registry release or cloud service was
+created, and no live application traffic was changed.
 
 The architecture keeps native human approvals for model analysis and system-wide
 control. Suspicious requests are blocked immediately by deterministic code.

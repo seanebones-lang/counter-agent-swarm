@@ -1,6 +1,6 @@
 # Publication drafts — not posted
 
-Prepared October 23, 2026. This document contains an article suitable for X or LinkedIn, plus shorter introduction posts. The public repository is not published; the call to action is to request the tested component preview at hello@nexteleven.dev. No publication, new license grant for Mothership, or production-protection claim is implied.
+Prepared October 23, 2026. The GitHub glue repository is now public and its packaged component CI passes on Ubuntu and macOS. The article and social posts below remain unposted drafts. No new license grant for Mothership or production-protection claim is implied.
 
 # Black October: Help Us Test Counter-Agent Swarm
 
@@ -18,7 +18,7 @@ It’s called **Counter-Agent Swarm**.
 
 We’re building an Apache-2.0 open-source glue layer for defensive investigation and response. We want to develop it in public, show our working, publish the limits alongside the results, and invite people to challenge the design.
 
-We’re preparing the public repository. A source preview for component testing is available now on request.
+The source is now public: [Counter-Agent Swarm on GitHub](https://github.com/seanebones-lang/counter-agent-swarm). The repository includes the component tests, setup instructions and contribution guide.
 
 The purpose is to explore a practical question: can we help an operator investigate suspicious activity and apply a tightly scoped response, while keeping authority clear and the request path predictable?
 
@@ -67,7 +67,7 @@ We ask testers to return what happened, including failures, their environment, a
 
 We would be happy to credit people who assist as **official project contributors and testers**, using their preferred name or GitHub handle and with their agreement before public acknowledgement.
 
-If you’d like to help, email **hello@nexteleven.dev** with the subject **Counter-Agent Swarm — testing or contributing**. Tell us your OS, CPU architecture, and the kind of help you’re interested in. We’ll send the preview and the instructions appropriate to that scope.
+Start with the [code and test instructions](https://github.com/seanebones-lang/counter-agent-swarm) and [contribution guide](https://github.com/seanebones-lang/counter-agent-swarm/blob/main/CONTRIBUTING.md). If you'd like help choosing a scope, email **hello@nexteleven.dev** with the subject **Counter-Agent Swarm — testing or contributing**. Tell us your OS, CPU architecture, and the kind of help you're interested in.
 
 The intent is straightforward: build something useful, make the work inspectable, listen to people who find problems, and improve it in the open.
 
@@ -79,11 +79,11 @@ If you can help us find where it breaks, we’d be grateful.
 
 ## Short X introduction
 
-We're building Counter-Agent Swarm at NextEleven: Apache-2.0 defensive glue in response to Black October.
+NextEleven's response to Black October: Counter-Agent Swarm.
 
-Seeking volunteer testers/contributors. Unpaid; credit with permission. Component preview needs no API key.
+Apache-2.0. Seeking volunteer testers/contributors (unpaid; credit by agreement). 69 component tests; no API key.
 
-Interested? hello@nexteleven.dev
+https://github.com/seanebones-lang/counter-agent-swarm
 
 ## LinkedIn introduction
 
@@ -97,7 +97,7 @@ We’re inviting volunteer testers and contributors. This is unpaid open-source 
 
 The component preview has 69 tests and needs no API key, paid account or access to a real application. We’re looking for clean-environment tests, Python/backend review, Linux/container feedback and clearer documentation.
 
-The public repository is being prepared; the component source preview is available on request. Mothership remains a separate private dependency, so full native integration needs additional runtime access.
+The public repository and test instructions are live: https://github.com/seanebones-lang/counter-agent-swarm . Mothership remains a separate private dependency, so full native integration needs additional runtime access.
 
 This is an early developer preview. Production deployment, real sandbox isolation and live analyst judgment still need validation.
 

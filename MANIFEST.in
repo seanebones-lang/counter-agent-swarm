@@ -3,4 +3,5 @@ recursive-include examples *.json
 recursive-include scripts *.py
 recursive-include tests *.py
 recursive-include docs *.md *.json
+recursive-include lab *.py *.txt Dockerfile*
 global-exclude __pycache__ *.py[cod] .env .env.local

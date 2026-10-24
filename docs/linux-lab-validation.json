@@ -1,0 +1,220 @@
+{
+  "status": "passed",
+  "checked_at_utc": "2026-10-24T21:05:57.244492+00:00",
+  "scope": "NextEleven-controlled real native engines through a restricted two-role Linux lab",
+  "independent_external_test": false,
+  "host": "Apple Silicon macOS; dedicated aarch64 Linux VM; Linux amd64 userspace via Rosetta emulation",
+  "runtime_uid": 10001,
+  "mothership_version": "0.3.0",
+  "mothership_source_revision": "7daf8ddd33c148853f88412c4409c4bada1f34c7",
+  "mothership_wheel_sha256": "ffa03e8284b96ccabfa623529fe80741c3bb921385285fd974dea3c18b092172",
+  "deadbolt_version": "2.0.0",
+  "deadbolt_binary_sha256": "f98f19eddd7fbc308c43c18bd3dadc3ab8d3ea33b4b4e88e174c98c296cb7e11",
+  "private_local_image_id": "sha256:8b894cdf18c496efca36d80b5d9efcb4f9d25a385e732746d2fa7563ff9a8a13",
+  "native_scenarios": [
+    {
+      "scenario": "kill",
+      "status": "passed",
+      "checks": [
+        {
+          "action": "kill",
+          "healthy_status": 200,
+          "indicator_status": 403,
+          "approval_required": true,
+          "mothership_memory_verified": true,
+          "native_mcp_action_verified": true,
+          "same_key_replayed_without_native_event": true,
+          "next_request_status": 503,
+          "upstream_requests_during_scenario": 1,
+          "control_evidence_accessible_after_action": true,
+          "fixture_analyst_calls": 1,
+          "approval_survived_restart": false
+        },
+        {
+          "case": "gate_unavailable_store_unavailable_and_missing_credential",
+          "missing_credential_status": 503,
+          "unavailable_store_status": 503,
+          "failed_store_not_recreated": true,
+          "unavailable_gate_status": 503,
+          "upstream_requests_during_scenario": 0
+        }
+      ],
+      "processes_stopped": true,
+      "disposable_stores_removed": true
+    },
+    {
+      "scenario": "deny",
+      "status": "passed",
+      "checks": [
+        {
+          "action": "deny",
+          "healthy_status": 200,
+          "indicator_status": 403,
+          "approval_required": true,
+          "mothership_memory_verified": true,
+          "native_mcp_action_verified": true,
+          "same_key_replayed_without_native_event": true,
+          "next_request_status": 503,
+          "upstream_requests_during_scenario": 1,
+          "control_evidence_accessible_after_action": true,
+          "fixture_analyst_calls": 1,
+          "approval_survived_restart": false
+        },
+        {
+          "case": "gate_unavailable_store_unavailable_and_missing_credential",
+          "missing_credential_status": 503,
+          "unavailable_store_status": 503,
+          "failed_store_not_recreated": true,
+          "unavailable_gate_status": 503,
+          "upstream_requests_during_scenario": 0
+        }
+      ],
+      "processes_stopped": true,
+      "disposable_stores_removed": true
+    },
+    {
+      "scenario": "revoke",
+      "status": "passed",
+      "checks": [
+        {
+          "action": "revoke",
+          "healthy_status": 200,
+          "indicator_status": 403,
+          "approval_required": true,
+          "mothership_memory_verified": true,
+          "native_mcp_action_verified": true,
+          "same_key_replayed_without_native_event": true,
+          "next_request_status": 503,
+          "upstream_requests_during_scenario": 1,
+          "control_evidence_accessible_after_action": true,
+          "fixture_analyst_calls": 1,
+          "approval_survived_restart": false
+        },
+        {
+          "case": "gate_unavailable_store_unavailable_and_missing_credential",
+          "missing_credential_status": 503,
+          "unavailable_store_status": 503,
+          "failed_store_not_recreated": true,
+          "unavailable_gate_status": 503,
+          "upstream_requests_during_scenario": 0
+        }
+      ],
+      "processes_stopped": true,
+      "disposable_stores_removed": true
+    },
+    {
+      "scenario": "reject_approval",
+      "status": "passed",
+      "checks": [
+        {
+          "case": "reject_approval",
+          "approval_required": true,
+          "native_effect_absent": true,
+          "next_request_status": 200,
+          "upstream_requests_during_scenario": 2
+        },
+        {
+          "case": "gate_unavailable_store_unavailable_and_missing_credential",
+          "missing_credential_status": 503,
+          "unavailable_store_status": 503,
+          "failed_store_not_recreated": true,
+          "unavailable_gate_status": 503,
+          "upstream_requests_during_scenario": 0
+        }
+      ],
+      "processes_stopped": true,
+      "disposable_stores_removed": true
+    },
+    {
+      "scenario": "restart_pending",
+      "status": "passed",
+      "checks": [
+        {
+          "action": "kill",
+          "healthy_status": 200,
+          "indicator_status": 403,
+          "approval_required": true,
+          "mothership_memory_verified": true,
+          "native_mcp_action_verified": true,
+          "same_key_replayed_without_native_event": true,
+          "next_request_status": 503,
+          "upstream_requests_during_scenario": 1,
+          "control_evidence_accessible_after_action": true,
+          "fixture_analyst_calls": 1,
+          "approval_survived_restart": true
+        },
+        {
+          "case": "gate_unavailable_store_unavailable_and_missing_credential",
+          "missing_credential_status": 503,
+          "unavailable_store_status": 503,
+          "failed_store_not_recreated": true,
+          "unavailable_gate_status": 503,
+          "upstream_requests_during_scenario": 0
+        }
+      ],
+      "processes_stopped": true,
+      "disposable_stores_removed": true
+    },
+    {
+      "scenario": "unavailable",
+      "status": "passed",
+      "checks": [
+        {
+          "case": "gate_unavailable_store_unavailable_and_missing_credential",
+          "missing_credential_status": 503,
+          "unavailable_store_status": 503,
+          "failed_store_not_recreated": true,
+          "unavailable_gate_status": 503,
+          "upstream_requests_during_scenario": 0
+        }
+      ],
+      "processes_stopped": true,
+      "disposable_stores_removed": true
+    }
+  ],
+  "https_transport": {
+    "native_kill_scenario_passed": true,
+    "tester_cannot_approve": true,
+    "operator_credential_stayed_loopback": true,
+    "client_certificate_verification_enabled": true
+  },
+  "lab_access_checks": {
+    "missing_or_wrong_role_refused": true,
+    "arbitrary_targets_refused": true,
+    "stale_steps_refused": true,
+    "duplicate_decisions_refused": true,
+    "expired_session_refused_unit_test": true,
+    "cancelled_native_run_cleaned_up": true,
+    "outbound_tcp_unreachable": true
+  },
+  "tests": {
+    "linux_installed_regressions": 100,
+    "linux_optional_native_pytest_skipped": 1,
+    "separate_native_http_scenarios": 6,
+    "additional_https_native_scenarios": 1,
+    "current_public_component_tests_local_mac": 76
+  },
+  "tester_kit": {
+    "sha256": "b5237deb6025ce17db346d4ab9dc11cbbc5f78806c91d6aa268cfe5cc63acae4",
+    "engines_or_keys_included": false,
+    "exact_extracted_client_reached_https_plan": true
+  },
+  "live_model_calls": 0,
+  "exploit_detonation": false,
+  "private_engine_shared": false,
+  "production_systems_touched": false,
+  "initial_test_issue": "An admission probe adds audit evidence. Rejection test comparison was moved before that probe; no engine change was required.",
+  "remaining_limits": [
+    "External tester has not run this lab yet",
+    "Linux amd64 userspace was emulated on Apple Silicon; not a native x86-64 benchmark",
+    "No live response analyst judgment, threat-feed integration or hostile-payload sandbox validation",
+    "No production deployment, load or recovery certification"
+  ],
+  "evidence_files_sha256": {
+    "tester-kit-check.json": "decb0255987c18805500d45f126c2c1d7bffa12d01ae5f7055b8c680239c99d8",
+    "native-cancellation.json": "f1f70ebc8c0761ed3f75e1dffdbcf9f7a5365b13957e9d7bb100ba6c5e84aa7f",
+    "native-https-smoke.json": "19413d2f8ada464e769b09e032b59dc099958b3d927b630c110785c15a1f3311",
+    "linux-dependencies.txt": "8ea1361328c4c4a81b9945706d235833ef51b4261c10c6fc5e157798d4a7711f",
+    "native-http-smoke.json": "f8d2e4d31066dec3f2c89a4d37fb53afb0a50d79f610cd8da35ccddf3b376533"
+  }
+}

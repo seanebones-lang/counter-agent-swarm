@@ -2,7 +2,7 @@
 
 | Term | Meaning and limit |
 | --- | --- |
-| Public component suite | The 69 explicitly selected tests runnable without either engine or a model key. Fixtures check glue behavior; they do not prove native enforcement. |
+| Public component suite | Explicitly selected tests runnable without either engine or a model key. Fixtures check glue behavior; they do not prove native enforcement. The original tester archive has 69 tests; later revisions add lab access-boundary checks. |
 | Native integration | Separately scoped tests using real, separately authorized Mothership and DeadBolt artifacts. This is different from the public component suite. |
 | Mothership | The external orchestration runtime supplying scopes, approvals, memory and dispatch. It remains private; this repository's Apache-2.0 license does not grant runtime access. |
 | DeadBolt | The external enforcement engine. Its native policies and stores decide whether a cooperative admission is allowed. |

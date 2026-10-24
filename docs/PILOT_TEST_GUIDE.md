@@ -6,7 +6,8 @@ Plan for 30–45 minutes. Stop whenever something is unclear or unexpected.
 
 ## Choose the actual available scope
 
-**Public component test:** Packaged CI has tested Python 3.13 on macOS/Linux.
+**Public component test:** Packaged CI has tested Python 3.12 on Ubuntu and
+Python 3.13 on macOS/Linux.
 An external tester also reported a passing Python 3.12.3 run on Ubuntu 24.04
 under WSL2, as root. That does not validate ordinary-user permissions or native
 Windows support. Native Windows is unsupported by the Unix worker and
@@ -103,7 +104,7 @@ created when no longer needed. Keep the redacted result you intend to share.
 Acceptance itself verifies teardown of its temporary native services and stores;
 its success is not a proof of recovery for any real system.
 
-This preview has no validated Linux/Railway deployment, sustained attack-load
+This preview has no validated production/Railway deployment, sustained attack-load
 result, independent adversarial assessment, real sandbox detonation or live
 frontier-analyst judgment result. The model suggests actions; native approval
 remains required. DeadBolt stops the next cooperative admission and cannot undo

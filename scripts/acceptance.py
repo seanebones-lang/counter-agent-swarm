@@ -24,6 +24,8 @@ import tempfile
 import threading
 import time
 from typing import Any
+from collections.abc import Callable
+import platform
 
 import httpx
 import uvicorn
@@ -35,6 +37,7 @@ from mothership.sdk import Client
 
 
 TTL = 300
+SCENARIOS = ("all", "kill", "deny", "revoke", "reject_approval", "restart_pending", "unavailable")
 CONTROL_TOOLS = ["swarm.kill", "swarm.revoke", "swarm.deny", "swarm.evidence",
                  "memory.put", "memory.get", "memory.checkpoint_save"]
 
@@ -132,7 +135,11 @@ class LiveProxy:
         require(not self.thread.is_alive(), "Proxy did not terminate")
 
 
-def run_acceptance(binary: str) -> dict[str, Any]:
+def run_acceptance(binary: str, *, scenario: str = "all",
+                   observer: Callable[[str, dict], Any] | None = None) -> dict[str, Any]:
+    require(scenario in SCENARIOS, "Unknown fixed scenario")
+    def observe(phase: str, facts: dict | None = None):
+        return observer(phase, facts or {}) if observer else None
     import counter_swarm
     source_root = Path(counter_swarm.__file__).resolve().parent
     source_digest = hashlib.sha256()
@@ -268,7 +275,10 @@ def run_acceptance(binary: str) -> dict[str, Any]:
                     gate_status = client.call("deadbolt.status", {})
                     require(gate_status["required"] is True and gate_status["bound"] is True,
                             "Native Mothership admission must be required and bound")
-                    for action in ("kill", "deny", "revoke"):
+                    actions = (("kill", "deny", "revoke") if scenario == "all" else
+                               () if scenario == "unavailable" else
+                               ("kill",) if scenario in {"reject_approval", "restart_pending"} else (scenario,))
+                    for action in actions:
                         run = "fixture-target-" + action
                         credential = "fixture-credential-" + action
                         token = provision(run, credential, ["web.forward"])
@@ -281,14 +291,19 @@ def run_acceptance(binary: str) -> dict[str, Any]:
                         gate = Gate(sidecar_origin, run, token)
                         with LiveProxy(upstream_origin, gate) as proxy:
                             with httpx.Client(base_url=proxy.origin, timeout=10, trust_env=False) as edge:
+                                observe("ready", {"scenario": scenario, "action": action})
                                 healthy = edge.get("/fictional-health")
                                 require(healthy.status_code == 200, "Healthy request was not forwarded")
                                 require(counter["requests"] == initial_count + 1, "Independent upstream count wrong")
+                                observe("healthy", {"http_status": healthy.status_code,
+                                        "upstream_requests": counter["requests"] - initial_count})
                                 # Inert text indicator only. No target executes this request.
                                 blocked = edge.post("/fictional-indicator-" + action,
                                     content=b"<?php system('FICTIONAL_INERT_INDICATOR'); ?>")
                                 require(blocked.status_code == 403, "Deterministic detection did not block")
                                 require(counter["requests"] == initial_count + 1, "Indicator reached upstream")
+                                observe("detected", {"http_status": blocked.status_code,
+                                        "upstream_requests": counter["requests"] - initial_count})
                                 finding = proxy.findings.get(timeout=2)
                                 analyst = FixtureAnalyst(action)
                                 recommendation = asyncio.run(Gateway(analyst, run).analyze(finding))
@@ -301,8 +316,32 @@ def run_acceptance(binary: str) -> dict[str, Any]:
                                         "Detection evidence missing from Mothership memory")
                                 require(asyncio.run(gate.admitted()), "Effect happened before approval")
                                 approval_id = response["error"]["details"]["approval_id"]
+                                if scenario == "restart_pending":
+                                    stop(mothership)
+                                    mothership = start_mothership()
+                                    require(asyncio.run(gate.admitted()), "Restart changed target admission")
+                                decision_from_operator = observe("approval_pending", {
+                                    "action": action, "target_still_admitted": True,
+                                    "approval_survived_restart": scenario == "restart_pending"})
+                                approve = (scenario != "reject_approval" if observer is None else decision_from_operator)
+                                require(type(approve) is bool, "Separate explicit operator decision required")
+                                require(approve == (scenario != "reject_approval"), "Decision does not match selected test")
+                                before_decision = evidence(client)
                                 decision = owner.post("/v1/admin/approvals/" + approval_id + "/decide",
-                                                       json={"approve": True}).json()["data"]
+                                                       json={"approve": approve}).json()["data"]
+                                if not approve:
+                                    require(decision["status"] == "denied", "Approval was not denied")
+                                    require(evidence(client) == before_decision, "Rejected action created native effect")
+                                    # A fresh admission itself writes target audit evidence.
+                                    # Compare effects before intentionally performing that probe.
+                                    require(asyncio.run(gate.admitted()), "Rejection disabled target")
+                                    still_healthy = edge.get("/fictional-after-rejection")
+                                    require(still_healthy.status_code == 200, "Rejected action blocked forwarding")
+                                    require(counter["requests"] == initial_count + 2, "Post-rejection count wrong")
+                                    results.append({"case": "reject_approval", "approval_required": True,
+                                        "native_effect_absent": True, "next_request_status": 200,
+                                        "upstream_requests_during_scenario": 2})
+                                    continue
                                 require(decision["status"] == "executed", "Approved real MCP action failed")
                                 require(decision["result"]["data"]["receipt"]["action"] == action,
                                         "Wrong native MCP action receipt")
@@ -322,7 +361,8 @@ def run_acceptance(binary: str) -> dict[str, Any]:
                                     "mothership_memory_verified": True, "native_mcp_action_verified": True,
                                     "same_key_replayed_without_native_event": True, "next_request_status": denied.status_code,
                                     "upstream_requests_during_scenario": 1, "control_evidence_accessible_after_action": True,
-                                    "fixture_analyst_calls": analyst.calls})
+                                    "fixture_analyst_calls": analyst.calls,
+                                    "approval_survived_restart": scenario == "restart_pending"})
 
                     # An intact target used solely to prove unavailability/missing admission fails closed.
                     token = provision("fixture-unavailable", "fixture-unavailable-credential", ["web.forward"])
@@ -365,6 +405,8 @@ def run_acceptance(binary: str) -> dict[str, Any]:
             require(all(process.poll() is not None for process in child_processes), "Child process cleanup incomplete")
     require(root_path is not None and not Path(root_path).exists(), "Disposable stores remain")
     return {"status": "passed", "schema_version": 1, "checked_at_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        "scenario": scenario, "platform": {"os": platform.system(), "architecture": platform.machine(),
+            "python": platform.python_version(), "uid": os.getuid()},
         "glue_source_sha256": source_digest.hexdigest(),
         "deadbolt_version": version, "deadbolt_binary_sha256": hashlib.sha256(binary_path.read_bytes()).hexdigest(),
         "mothership_version": mothership_package.__version__, "mothership_unmodified_external_dependency": True,
@@ -382,10 +424,11 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--deadbolt", default=shutil.which("deadbolt"))
     parser.add_argument("--out", type=Path, default=Path(__file__).resolve().parents[1] / "docs/acceptance.json")
+    parser.add_argument("--scenario", choices=SCENARIOS, default="all")
     args = parser.parse_args()
     if not args.deadbolt:
         parser.error("A reviewed external DeadBolt 2.0.0 executable is required")
-    receipt = run_acceptance(args.deadbolt)
+    receipt = run_acceptance(args.deadbolt, scenario=args.scenario)
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(receipt, indent=2) + "\n")
     print(json.dumps({"status": receipt["status"], "scenario_count": len(receipt["scenarios"]),

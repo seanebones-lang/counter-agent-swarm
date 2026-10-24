@@ -19,6 +19,23 @@ python3.13 -m venv .venv
 .venv/bin/python scripts/test_glue_only.py
 ```
 
+To run the same component suite and collect return files in one step, use
+`.venv/bin/python scripts/collect_component_results.py --out ./pankaj-results`
+instead of the last command. The output directory must be new. It writes
+`results.json`, `test-output.txt` and a `feedback.md` template; it uploads nothing.
+Fill in the feedback, inspect/redact the files, then return those three files by
+reply email. If you redact anything, mention which file changed: the included
+log hash describes the original locally collected, path-redacted log, while we
+will separately hash the actual version received. A `needs-review` result is
+useful feedback and must not be changed to make the run appear successful.
+
+Witness recording is optional and handled on NextEleven's side after return.
+With the tester's agreement we can retain the report and received-file hashes
+in a private local record, attribute claims to their source, and record later
+corrections separately. This provides provenance of the received report; it
+does not verify who operated the computer, whether the test was honest, or
+whether the software is secure. No public acknowledgement is assumed.
+
 Use a new environment; the script selects the public component tests explicitly.
 It tests deterministic indicators, bounded proxy behavior, gate refusals, model
 adapter fixtures, queue capacity/archival, supervisor fixtures, and intel/sandbox

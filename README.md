@@ -14,6 +14,10 @@ analysis, hostile-payload detonation, Linux/container deployment, performance
 under attack and independent adversarial evaluation remain unvalidated. No
 protected real application has been changed or deployed by this project.
 
+Created by **NextEleven**. The public component suite can be evaluated without
+Mothership or a model credential; full native integration needs separately
+authorized engine access. See the [pilot test guide](docs/PILOT_TEST_GUIDE.md).
+
 ## Architecture
 
 ```text
@@ -44,6 +48,10 @@ application bootstrap. There is no invented Mothership plugin/configuration API.
 The existing dispatcher supplies scope checks, idempotency, approvals and evidence.
 
 ## Run the no-cost native proof
+
+For component testing without the private runtime, install `.[test]` into a new
+environment and run `python scripts/test_glue_only.py`. This deliberately excludes
+native integration rather than silently substituting an imitation engine.
 
 Prerequisites: Python 3.13 (tested), a separately installed reviewed Mothership
 0.3.0, native DeadBolt 2.0.0, and the dependencies in `pyproject.toml`. Install
@@ -133,6 +141,11 @@ duplicate IDs do not enqueue twice. Queue-full/delivery failures leave suspiciou
 requests blocked and emit a bounded delivery-failure log. Archive completed incidents
 under an operator-approved retention policy; this prototype does not silently evict
 pending or uncertain work.
+
+Use the explicit operator command `counter-swarm archive-completed --destination
+/absolute/private/archives/new.jsonl` to durably export completed records and
+reclaim their slots. See [queue operations](docs/QUEUE_OPERATIONS.md) for failure
+reconciliation and the public listener's resource bounds.
 
 Claims become held before remote work. A crash or unknown outcome requires
 operator reconciliation. `resume` only waits on the saved original approval; it

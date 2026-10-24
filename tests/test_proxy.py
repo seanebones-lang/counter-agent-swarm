@@ -8,7 +8,13 @@ class Allow:
 
 
 @pytest.mark.asyncio
-async def test_proxy_preserves_raw_path_duplicate_cookies_and_hop_removal(monkeypatch):
+@pytest.mark.parametrize('path', [
+    '/files/a%2Fb?q=%2F',
+    '/files/a%23b?q=%3F',
+    '/files/a%3Fb?q=%23',
+    '/files/%E2%98%83',
+])
+async def test_proxy_preserves_raw_path_duplicate_cookies_and_hop_removal(monkeypatch,path):
     real_client=httpx.AsyncClient
     seen=[]
     def upstream(request):
@@ -21,13 +27,47 @@ async def test_proxy_preserves_raw_path_duplicate_cookies_and_hop_removal(monkey
     async def sink(_): raise AssertionError('benign')
     app=create_proxy('http://origin.test',Allow(),sink)
     async with real_client(transport=httpx.ASGITransport(app),base_url='http://proxy.test') as client:
-        result=await client.get('/files/a%2Fb?q=%2F',headers=[('connection','x-one'),('connection','x-two'),
+        result=await client.get(path,headers=[('connection','x-one'),('connection','x-two'),
             ('x-one','remove'),('x-two','remove'),('x-forwarded-for','forged')])
-    assert seen[0].url.raw_path==b'/files/a%2Fb?q=%2F'
+    assert seen[0].url.raw_path==path.encode('ascii')
     assert seen[0].url.host=='origin.test'
     assert all(x not in seen[0].headers for x in ('x-one','x-two','x-forwarded-for'))
     assert result.headers.get_list('set-cookie')==['a=1','b=2']
     assert 'x-hop' not in result.headers and result.content==b'hello'
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('path,host,rule', [
+    ('/%23/%3C%3Fphp%20system%28marker%29', 'proxy.test', 'php-execution-indicator'),
+    ('/%3F/%3C%3Fphp%20system%28marker%29', 'proxy.test', 'php-execution-indicator'),
+    ('/%23/%00/inert-marker', 'proxy.test', 'nul-in-request'),
+    ('/%3F/%00/inert-marker', 'proxy.test', 'nul-in-request'),
+    ('/%00/%3C%3Fphp%20system%28marker%29', 'proxy.test', 'nul-in-request'),
+    ('/%3C%3Fphp%20system%28marker%29', 'proxy.test#discarded', 'php-execution-indicator'),
+    ('/%3C%3Fphp%20system%28marker%29', 'proxy.test?discarded', 'php-execution-indicator'),
+])
+async def test_proxy_inspects_actual_path_before_gate_or_upstream(monkeypatch,path,host,rule):
+    real_client=httpx.AsyncClient
+    upstream_calls=[]
+    findings=[]
+    class CountingGate:
+        calls=0
+        async def admitted(self):
+            self.calls+=1
+            return True
+    gate=CountingGate()
+    def upstream(request):
+        upstream_calls.append(request)
+        return httpx.Response(200, stream=httpx.ByteStream(b'upstream'))
+    monkeypatch.setattr('counter_swarm.proxy.httpx.AsyncClient',
+        lambda **kw: real_client(transport=httpx.MockTransport(upstream),**kw))
+    async def sink(finding): findings.append(finding)
+    app=create_proxy('http://origin.test',gate,sink)
+    async with real_client(transport=httpx.ASGITransport(app),base_url='http://proxy.test') as client:
+        result=await client.get(path,headers={'Host':host})
+    assert result.status_code==403
+    assert len(findings)==1 and rule in findings[0].rules
+    assert gate.calls==0 and upstream_calls==[]
 
 
 @pytest.mark.asyncio

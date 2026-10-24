@@ -37,7 +37,9 @@ def create_proxy(upstream: str, gate: Gate,
                     body.extend(chunk[:MAX_BODY + 1 - len(body)])
                     if len(body) > MAX_BODY:
                         break
-            finding = inspect_request(request.url.path, request.scope.get("query_string", b""),
+            # URL reconstruction can reinterpret decoded '#'/'?' or an invalid
+            # Host as URL delimiters and omit part of the actual ASGI path.
+            finding = inspect_request(request.scope["path"], request.scope.get("query_string", b""),
                                       request.headers.raw, bytes(body))
             if finding:
                 try:
@@ -51,7 +53,7 @@ def create_proxy(upstream: str, gate: Gate,
                 return Response("Request blocked", status_code=403)
             if not await gate.admitted():
                 return Response("Protection unavailable or access denied", status_code=503)
-            raw_path = request.scope.get("raw_path", request.url.path.encode("utf8"))
+            raw_path = request.scope.get("raw_path", request.scope["path"].encode("utf8"))
             query = request.scope.get("query_string", b"")
             target = fixed.copy_with(raw_path=raw_path + (b"?" + query if query else b""))
             connection_headers = {v.strip().lower() for v in ",".join(request.headers.getlist("connection")).split(",")}

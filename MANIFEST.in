@@ -1,0 +1,6 @@
+include README.md LICENSE NOTICE SECURITY.md
+recursive-include examples *.json
+recursive-include scripts *.py
+recursive-include tests *.py
+recursive-include docs *.md *.json
+global-exclude __pycache__ *.py[cod] .env .env.local

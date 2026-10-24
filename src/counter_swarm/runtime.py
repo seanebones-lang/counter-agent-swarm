@@ -161,14 +161,22 @@ def process_one(queue: IncidentQueue, client, *, live_analysis=False, resume: st
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("command", choices=["work", "resume", "status"])
+    parser.add_argument("command", choices=["work", "resume", "status", "archive-completed"])
     parser.add_argument("--event-id")
+    parser.add_argument("--destination", type=Path,
+                        help="New archive file in an existing owner-only directory; operator maintenance only")
     args = parser.parse_args()
+    if args.command == "archive-completed" and args.destination is None:
+        parser.error("archive-completed requires --destination")
+    if args.command != "archive-completed" and args.destination is not None:
+        parser.error("--destination is only supported for archive-completed")
     try:
         config = RuntimeConfig.load()
         queue = IncidentQueue(Path(config.queue_file))
         if args.command == "status":
             result = queue.status()
+        elif args.command == "archive-completed":
+            result = queue.archive_completed(args.destination)
         else:
             if args.command == "resume" and not args.event_id:
                 parser.error("resume requires the original --event-id")

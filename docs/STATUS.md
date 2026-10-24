@@ -7,7 +7,7 @@ Verified on macOS arm64 with external unmodified Mothership 0.3.0 and native
 DeadBolt 2.0.0:
 
 - Built a glue-only wheel and installed it into a temporary directory outside
-  the checkout. All 62 regression tests passed there.
+  the checkout. All 94 regression tests passed there after the release fixes.
 - Ran the separate native acceptance from that installed package: kill,
   clip-forwarding deny, credential revocation, and unavailable/damaged gate cases
   passed. The ordinary pytest native test is skipped unless explicitly opted in;
@@ -19,7 +19,22 @@ DeadBolt 2.0.0:
 - Temporary acceptance services/stores were removed. Canonical Mothership's
   tracked source remained clean.
 - Approved OpenAI credential saved in private ignored local configuration; no
-  credential value is included in this repository. Zero live model requests.
+  credential value is included in this repository. Zero Swarm OpenAI requests.
+- Hermes with Grok4.7 actually ran the fixed installed-package, regression and
+  native acceptance commands through a restricted QA MCP. The passing run used
+  seven xAI requests; this is an external test driver, not a live Swarm analyst.
+  See `HERMES_TEST_REPORT.md` for the first kit failures, corrections and limits.
+- A new environment containing only public glue dependencies passed69 component
+  tests without Mothership installed. `scripts/test_glue_only.py` and the pilot
+  guide make this narrower test available without disclosing the private engine.
+- The completed source security scan found one medium path-representation
+  screening bypass in the original1036d76 snapshot. The subsequent local fix
+  screens the ASGI path and preserves encoded forwarding;14 proxy cases cover
+  the fix, including zero gate/upstream calls for blocked variants. The original
+  scan remains sealed and is not a scan of the changed tree.
+- Operator-only completed-record archival preserves unsettled incidents and
+  supports bounded queue maintenance. The staging supervisor delays the public
+  listener until control readiness and sets explicit connection/resource bounds.
 
 Implemented but validated with fixtures/mocks only: frontier Responses adapter,
 native analysis approval wrapper, incident ingress/queue/worker recovery phases,

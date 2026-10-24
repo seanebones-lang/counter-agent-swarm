@@ -1,10 +1,15 @@
 {
   "status": "passed",
-  "wheel_sha256": "cf965635523a9167e472207fa9899b66b98ded6345a579c30f1ecaf5c3755710",
+  "wheel_sha256": "ff7ceda3e0ca25005694eda191a107b7efb2449fe62a9cef2fb17a0af7b10d3e",
+  "glue_source_sha256": "0de3e51286a8dece1b1bfc0aac41bc4cd701970abcd36ff42278982181715887",
   "installed_outside_checkout": true,
   "wheel_contains_glue_only": true,
-  "regression_tests_passed": 62,
+  "regression_tests_passed": 94,
+  "regression_tests_skipped": 1,
+  "skip_reason": "Native acceptance requires opt-in; separately executed and passed four scenarios",
   "native_acceptance": "docs/acceptance.json",
-  "live_model_calls": 0,
+  "swarm_live_model_calls": 0,
+  "external_hermes_grok_test_driver": true,
+  "public_component_tests_passed_without_mothership": 69,
   "container_runtime_tested": false
 }

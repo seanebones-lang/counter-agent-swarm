@@ -5,6 +5,7 @@ external effect. Pending approvals retain their original identifier and phase.
 """
 from __future__ import annotations
 import json
+import hashlib
 import os
 from pathlib import Path
 import sqlite3
@@ -72,3 +73,50 @@ class IncidentQueue:
         with self.connect() as db:
             db.row_factory = sqlite3.Row
             return [dict(row) for row in db.execute("SELECT id,state,phase,approval,code FROM incidents ORDER BY rowid LIMIT 2048")]
+
+    def archive_completed(self, destination: Path) -> dict:
+        """Operator-only export and removal of at most 2048 completed records.
+
+        No automatic caller invokes this method. The destination must be new and
+        its existing parent must be an owner-only directory. Both archive data
+        and its directory entry are fsynced before any queue deletion commits.
+        A failed commit may leave a duplicate archive; a failed write may leave
+        a partial archive. In either case the queued records remain available.
+        """
+        destination = Path(destination)
+        if not destination.is_absolute() or destination.name in {"", ".", ".."}:
+            raise ValueError("Archive destination must be an absolute new file path")
+        directory_fd = os.open(destination.parent, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
+        try:
+            directory = os.fstat(directory_fd)
+            if (not stat.S_ISDIR(directory.st_mode) or directory.st_uid != os.getuid()
+                    or directory.st_mode & 0o077):
+                raise ValueError("Archive directory must already exist and be owner-only")
+            with self.connect() as db:
+                db.execute("BEGIN IMMEDIATE")
+                db.row_factory = sqlite3.Row
+                rows = db.execute("SELECT * FROM incidents WHERE state='completed' ORDER BY rowid LIMIT 2048").fetchall()
+                archive_fd = os.open(destination.name, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW,
+                                     0o600, dir_fd=directory_fd)
+                digest = hashlib.sha256()
+                with os.fdopen(archive_fd, "wb") as output:
+                    for row in rows:
+                        exported = dict(row)
+                        exported["record"] = json.loads(exported["record"])
+                        encoded = (json.dumps(exported, sort_keys=True, allow_nan=False) + "\n").encode("utf-8")
+                        output.write(encoded)
+                        digest.update(encoded)
+                    output.flush()
+                    os.fsync(output.fileno())
+                os.fsync(directory_fd)
+                for row in rows:
+                    deleted = db.execute(
+                        "DELETE FROM incidents WHERE id=? AND state='completed' AND record=? "
+                        "AND phase IS ? AND approval IS ? AND code IS ?",
+                        (row["id"], row["record"], row["phase"], row["approval"], row["code"]))
+                    if deleted.rowcount != 1:
+                        raise RuntimeError("Completed queue snapshot changed; archive retained but removal aborted")
+                # The connection context commits all exact deletions together.
+            return {"archived": len(rows), "archive_path": str(destination), "sha256": digest.hexdigest()}
+        finally:
+            os.close(directory_fd)

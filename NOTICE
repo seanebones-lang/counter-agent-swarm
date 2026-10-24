@@ -1,0 +1,6 @@
+Counter-Agent Swarm
+Copyright 2026 NextEleven
+
+This repository's original glue code is licensed under Apache License 2.0.
+Mothership and DeadBolt are external dependencies and are not relicensed here.
+Mothership is currently proprietary. DeadBolt is Apache-2.0.

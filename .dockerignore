@@ -1,0 +1,11 @@
+*
+!Dockerfile
+!pyproject.toml
+!LICENSE
+!README.md
+!src/
+!src/**
+!dependency-artifacts/
+!dependency-artifacts/*.whl
+!dependency-artifacts/deadbolt
+**/__pycache__

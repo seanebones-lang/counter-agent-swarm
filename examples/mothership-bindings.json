@@ -1,0 +1,9 @@
+{
+  "agt_REPLACE_WITH_DEDICATED_CONTROLLER": {
+    "deadbolt": {
+      "url": "http://127.0.0.1:9782",
+      "agent_id": "control-run",
+      "admission_token_file": "/data/private/controller.token"
+    }
+  }
+}

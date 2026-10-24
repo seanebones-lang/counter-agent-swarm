@@ -1,0 +1,189 @@
+# Counter-Agent Swarm
+
+Small defensive glue connecting deterministic request screening, an **external
+unmodified Mothership**, and **external DeadBolt 2.0.0**. One protected application
+per instance. No new dashboard. This repository is Apache-2.0; the dependencies
+retain their own licenses. Mothership is currently proprietary and must be
+obtained separately with permission. An open-source glue layer does not make
+the entire dependency stack open source.
+
+**Status: local synthetic integration proof, not production protection.** Real
+Mothership → stdio MCP → native DeadBolt kill/deny/revoke acceptance passes.
+The analyst in that proof is a deterministic test fixture. Live frontier-model
+analysis, hostile-payload detonation, Linux/container deployment, performance
+under attack and independent adversarial evaluation remain unvalidated. No
+protected real application has been changed or deployed by this project.
+
+## Architecture
+
+```text
+request → bounded deterministic proxy → fresh DeadBolt admission → fixed private origin
+              │ suspicious: 403                │ unavailable/denied: 503
+              └→ authenticated metadata ingress → bounded durable transport queue
+                                                     │ off path
+                                     existing Mothership memory + swarm.analyze
+                                                     │ native owner approval
+                                            swarm.kill / deny / revoke
+                                                     │ fixed-target stdio MCP
+                                           external DeadBolt CLI / store
+
+official CISA KEV → reviewed inventory selection → Mothership memory (untrusted)
+separate isolated sandbox host → immutable rule proposals → human review
+```
+
+Detection and enforcement contain **no AI calls**. A suspicious request is denied
+before incident delivery or analysis. Benign forwarding requires a fresh exact
+DeadBolt allow; missing credentials, invalid replies, unavailable services and
+damaged lease stores cannot authorize forwarding. The protected origin must be
+private: direct origin access bypasses a cooperative proxy.
+
+The model can recommend an action, not approve it. Every new model analysis and
+system-wide control action requires Mothership's native approval. Analysis runs
+inside the glue-owned `swarm.analyze` tool registered into an unmodified Mothership
+application bootstrap. There is no invented Mothership plugin/configuration API.
+The existing dispatcher supplies scope checks, idempotency, approvals and evidence.
+
+## Run the no-cost native proof
+
+Prerequisites: Python 3.13 (tested), a separately installed reviewed Mothership
+0.3.0, native DeadBolt 2.0.0, and the dependencies in `pyproject.toml`. Install
+Mothership from your authorized source/artifact; do not install an unrelated
+similarly named public package.
+
+```sh
+python -m venv .venv
+.venv/bin/python -m pip install /absolute/path/to/reviewed-mothership.whl
+.venv/bin/python -m pip install -e '.[test]'
+.venv/bin/python -m pytest -q
+.venv/bin/python scripts/acceptance.py --deadbolt /absolute/path/to/deadbolt --out docs/acceptance.json
+```
+
+The harness creates disposable private stores and identities, starts real services
+on loopback, and checks an independent upstream request counter. It verifies:
+
+- Healthy request: 200 and one upstream request.
+- Inert exploit-shaped indicator: 403 and no additional upstream request.
+- Incident recorded in native Mothership memory; action waits for approval.
+- Owner fixture approves; actual external stdio MCP calls actual DeadBolt.
+- Kill, clip-forwarding deny and admission-credential revocation independently
+  block the next benign request with 503; the upstream count remains unchanged.
+- Same-key receipt replay creates no second native control event.
+- A separate controller still reads evidence after the target is killed.
+- Missing credentials, a broken disposable lease table and a stopped gate deny.
+- Temporary services and stores are cleaned up.
+
+See the retained [acceptance receipt](docs/acceptance.json). This is protocol
+automation by the development team, not an independent or model-operated test.
+The opt-in native pytest also runs when `COUNTER_SWARM_TEST_DEADBOLT` is set.
+
+## Tools and trust boundaries
+
+| Mothership tool | External MCP tool | Actual effect |
+| --- | --- | --- |
+| `swarm.kill` | `deadbolt_kill` | Kill the fixed target run; deny subsequent admissions |
+| `swarm.deny` | `deadbolt_deny` | Clip the fixed `web.forward` tool |
+| `swarm.revoke` | `deadbolt_revoke` | Revoke the fixed admission credential, not every credential |
+| `swarm.evidence` | `deadbolt_evidence` | Read bounded native evidence for the fixed target |
+| `swarm.analyze` | none | Approved bounded model advice; no model tool invocation |
+
+The MCP facade accepts a reason and incident ID, never a target, URL, shell command,
+database path or credential. The trusted owner-only binding selects those.
+No provisioning, renewal, resume or approval tools are exposed through this facade.
+MCP uses local stdio, not an unauthenticated network listener.
+
+Use separate DeadBolt runs for the controller and protected target. The controller's
+native allowlist should contain only `swarm.kill,swarm.deny,swarm.revoke,swarm.evidence,
+swarm.analyze,memory.put,memory.get,memory.checkpoint_save` as required. Mark those
+as offline tools when using destination policies, because these dedicated adapters
+own their fixed endpoints. Do not grant generic `http.request` to the controller.
+Owner routes and `approvals.wait` remain subject to native Mothership semantics.
+
+DeadBolt kill is **next-admission enforcement**, not termination of in-flight HTTP
+requests, OS processes or malicious code already executing in an application.
+A same-user/root process able to edit credentials, policies, binaries or stores is
+outside this cooperative enforcement boundary. Events are local records, not
+independent evidence custody.
+
+## Per-system runtime
+
+Copy the example JSON files into a private directory outside Git. Set their real
+fixed identifiers and origins, permissions 0600 for files and 0700 for directories.
+Provision both native runs/policies/credentials first using reviewed DeadBolt tools.
+Create the Mothership controller through its existing owner API, using
+[`examples/mothership-agent.json`](examples/mothership-agent.json). The native
+acceptance script is an executable provisioning reference for disposable identities.
+
+Set the paths and mandatory native gate configuration shown in `.env.example`.
+The processes can be started individually:
+
+```sh
+python -m uvicorn counter_swarm.mothership_ext:create_app --factory --host 127.0.0.1 --port 9783 --no-access-log
+python -m uvicorn counter_swarm.runtime:configured_ingress --factory --host 127.0.0.1 --port 9784 --no-access-log
+python -m uvicorn counter_swarm.runtime:configured_proxy --factory --host 127.0.0.1 --port 8080 --no-access-log
+counter-swarm work
+counter-swarm status
+counter-swarm resume --event-id ORIGINAL_INCIDENT_ID
+```
+
+Start DeadBolt's authenticated loopback sidecar separately against the same trusted
+database/events binding. `work` handles one queued incident. Default behavior saves
+the finding and escalates in Mothership, with no model request or system-wide action.
+An authenticated metadata ingress queues at most 2,048 content-addressed incidents;
+duplicate IDs do not enqueue twice. Queue-full/delivery failures leave suspicious
+requests blocked and emit a bounded delivery-failure log. Archive completed incidents
+under an operator-approved retention policy; this prototype does not silently evict
+pending or uncertain work.
+
+Claims become held before remote work. A crash or unknown outcome requires
+operator reconciliation. `resume` only waits on the saved original approval; it
+cannot approve it, silently requeue a held incident or generate a new action key.
+Mothership's stored results are the authoritative execution receipts.
+
+## Optional frontier analysis
+
+Live calls default to **zero** even when a key exists. To enable an approved trial,
+configure `COUNTER_SWARM_MODEL` with an available reviewed model,
+`COUNTER_SWARM_MODEL_BUDGET_FILE` with a persistent private absolute SQLite path,
+`COUNTER_SWARM_MAX_MODEL_CALLS` with an explicitly approved allowance (1–100), and
+set `live_analysis: true` in the runtime JSON. Load `OPENAI_API_KEY` through a private
+runtime secret mechanism. No secret is included in examples, images or receipts.
+
+The initial provider adapter uses OpenAI's Responses API with strict structured
+output, `store: false`, 600 output tokens maximum, a total request deadline, and
+at most 4 KiB of projected input. It sends only opaque fingerprint/incident IDs,
+known detector rule IDs and severity/revision. It sends no raw body, URL, request
+header or client address, and gives the model no tools. Other providers implement
+the small `Analyst` protocol; detector, gate and approval logic do not change.
+
+Persistent call reservations are consumed before network activity, including failed
+requests. There are no automatic retries/resets. This is a **call-count cap**, not
+an account-wide currency cap; model pricing and provider billing limits are separate.
+Exact-system/evidence cache entries expire after 60 seconds and never authorize
+admissions or reuse authority for merely similar payloads.
+
+## Sandbox, intel and deployment
+
+See [worker commands](docs/WORKERS.md), [sandbox boundary](docs/SANDBOX.md),
+[Railway staging profile](docs/DEPLOYMENT.md), and [security limits](SECURITY.md).
+The sandbox adapter does not supply or validate a production detonation image.
+Ordinary shared Railway containers are not the isolation boundary for exploit
+execution. Generated signatures remain review proposals; no automated active-rule
+promotion or honeypot deployment is included.
+
+## Why this is bounded
+
+Current indicators cover a small, explicit corpus: two layers of URL encoding,
+case/Unicode normalization, selected PHP execution/CGI indicators, suspicious RSC
+prototype strings, ambiguous framing, unsupported compressed request bodies and
+resource limits. They can miss attacks and flag legitimate requests. Blocking all
+compressed request bodies is a conservative compatibility tradeoff, not Brotli
+exploit identification. This proxy intentionally limits requests to 64 KiB and
+buffers upstream responses up to 2 MiB; WebSockets, streaming/SSE, large uploads
+and general-purpose transparent proxying are unsupported.
+
+Patching vulnerable runtimes remains essential. This project is not a cure for all
+PHP/Node/Next.js vulnerabilities or a substitute for application security and
+tested incident response. Evaluate false positives, parser differentials, real
+deployment bypasses, recovery and sustained load on staging before protecting a
+real system. The first useful milestone is reproducible scoped containment, not
+an AI allowed to rewrite production security policy from attacker-supplied text.

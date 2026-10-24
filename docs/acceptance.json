@@ -1,0 +1,75 @@
+{
+  "status": "passed",
+  "schema_version": 1,
+  "checked_at_utc": "2026-10-24T02:41:55Z",
+  "glue_source_sha256": "fe20e0da4d4d88df676c33b158cf7ff5c56aa0caaa3b3eb2bb00b92bfa3cfae2",
+  "deadbolt_version": "deadbolt 2.0.0",
+  "deadbolt_binary_sha256": "741f7f60966b56c7ce1f3d2268778c6bdb69f0ece23c6992980dc3708d134fd1",
+  "mothership_version": "0.3.0",
+  "mothership_unmodified_external_dependency": true,
+  "mothership_source_revision": "7daf8ddd33c148853f88412c4409c4bada1f34c7",
+  "mothership_tracked_source_clean": true,
+  "mothership_native_deadbolt_admission_required": true,
+  "control_run_separate_from_protected_targets": true,
+  "processes_stopped": true,
+  "disposable_stores_removed": true,
+  "scenarios": [
+    {
+      "action": "kill",
+      "healthy_status": 200,
+      "indicator_status": 403,
+      "approval_required": true,
+      "mothership_memory_verified": true,
+      "native_mcp_action_verified": true,
+      "same_key_replayed_without_native_event": true,
+      "next_request_status": 503,
+      "upstream_requests_during_scenario": 1,
+      "control_evidence_accessible_after_action": true,
+      "fixture_analyst_calls": 1
+    },
+    {
+      "action": "deny",
+      "healthy_status": 200,
+      "indicator_status": 403,
+      "approval_required": true,
+      "mothership_memory_verified": true,
+      "native_mcp_action_verified": true,
+      "same_key_replayed_without_native_event": true,
+      "next_request_status": 503,
+      "upstream_requests_during_scenario": 1,
+      "control_evidence_accessible_after_action": true,
+      "fixture_analyst_calls": 1
+    },
+    {
+      "action": "revoke",
+      "healthy_status": 200,
+      "indicator_status": 403,
+      "approval_required": true,
+      "mothership_memory_verified": true,
+      "native_mcp_action_verified": true,
+      "same_key_replayed_without_native_event": true,
+      "next_request_status": 503,
+      "upstream_requests_during_scenario": 1,
+      "control_evidence_accessible_after_action": true,
+      "fixture_analyst_calls": 1
+    },
+    {
+      "case": "gate_unavailable_store_unavailable_and_missing_credential",
+      "missing_credential_status": 503,
+      "unavailable_store_status": 503,
+      "failed_store_not_recreated": true,
+      "unavailable_gate_status": 503,
+      "upstream_requests_during_scenario": 0
+    }
+  ],
+  "model_operated": false,
+  "live_model_calls": 0,
+  "real_accounts_or_services": false,
+  "exploit_detonation": false,
+  "limits": [
+    "Synthetic same-team protocol acceptance; no live frontier model trial",
+    "Kill/clip/revocation stop the next admission, not already-running effects",
+    "Indicators are conservative examples, not comprehensive exploit coverage",
+    "No deployment, OS sandbox, live WAF rollout or public-origin bypass verification"
+  ]
+}

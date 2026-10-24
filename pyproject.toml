@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "n11-counter-agent-swarm"
+version = "0.1.0"
+description = "Per-system defensive glue for external Mothership and DeadBolt"
+requires-python = ">=3.11"
+license = "Apache-2.0"
+dependencies = ["mcp>=2.3,<3", "httpx>=0.28,<1", "pydantic>=2.14,<3", "fastapi>=0.143,<1", "uvicorn>=0.54,<1"]
+
+[project.optional-dependencies]
+test = ["pytest>=9", "pytest-asyncio>=1.4"]
+
+[project.scripts]
+counter-deadbolt-mcp = "counter_swarm.control_server:main"
+counter-swarm = "counter_swarm.runtime:main"
+counter-swarm-intel = "counter_swarm.worker_commands:intel_main"
+counter-swarm-sandbox = "counter_swarm.worker_commands:sandbox_main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]

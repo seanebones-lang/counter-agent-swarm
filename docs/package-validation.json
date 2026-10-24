@@ -1,0 +1,10 @@
+{
+  "status": "passed",
+  "wheel_sha256": "cf965635523a9167e472207fa9899b66b98ded6345a579c30f1ecaf5c3755710",
+  "installed_outside_checkout": true,
+  "wheel_contains_glue_only": true,
+  "regression_tests_passed": 62,
+  "native_acceptance": "docs/acceptance.json",
+  "live_model_calls": 0,
+  "container_runtime_tested": false
+}

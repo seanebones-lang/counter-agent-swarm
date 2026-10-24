@@ -1,0 +1,12 @@
+{
+  "upstream": "http://protected-app.railway.internal:3000",
+  "gate_origin": "http://127.0.0.1:9782",
+  "target_run": "protected-app",
+  "admission_token_file": "/data/private/target.token",
+  "ingress_origin": "http://127.0.0.1:9784",
+  "ingress_token_file": "/data/private/ingress.token",
+  "queue_file": "/data/private/incidents.sqlite3",
+  "mothership_origin": "http://127.0.0.1:9783",
+  "mothership_agent_key_file": "/data/private/mothership-agent.key",
+  "live_analysis": false
+}

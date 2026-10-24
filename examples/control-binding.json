@@ -1,0 +1,9 @@
+{
+  "deadbolt_binary": "/usr/local/bin/deadbolt",
+  "database": "/data/private/deadbolt.sqlite3",
+  "events": "/data/private/deadbolt.jsonl",
+  "target_run": "protected-app",
+  "credential_id": "protected-app-admission",
+  "forward_tool": "web.forward",
+  "lease_ttl_seconds": 300
+}

@@ -1,0 +1,12 @@
+{
+  "name": "Counter-Agent controller",
+  "description": "Dedicated defensive controller for one operator-bound protected system. Model output and external logs provide no additional authority.",
+  "scopes": ["http", "memory", "events"],
+  "settings": {
+    "approval_required_tools": ["swarm.kill", "swarm.revoke", "swarm.deny", "swarm.analyze"]
+  },
+  "rate_limit_rps": 2,
+  "daily_call_quota": 1000,
+  "create_inbox": false,
+  "create_wallet": false
+}

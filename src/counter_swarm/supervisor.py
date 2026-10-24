@@ -1,0 +1,96 @@
+"""Single-system colocated staging profile; operator provisions all authority first.
+
+Stops every child when any required service exits. It never issues, renews or
+reopens a DeadBolt lease and never approves Mothership actions.
+"""
+from __future__ import annotations
+import os
+import signal
+import subprocess
+import sys
+import time
+from urllib.parse import urlsplit
+from .config import ControlBinding
+from .runtime import RuntimeConfig
+
+
+def main():
+    config = RuntimeConfig.load()
+    binding = ControlBinding.load()
+    if binding.target_run != config.target_run or binding.forward_tool != "web.forward":
+        raise ValueError("Proxy and MCP control target must be identical")
+    if not os.environ.get("DEADBOLT_TOKEN") or os.environ.get("MS_DEADBOLT_REQUIRED") != "true":
+        raise ValueError("Required private sidecar authentication and Mothership admission are missing")
+    ports = [urlsplit(origin).port for origin in (config.gate_origin, config.mothership_origin, config.ingress_origin)]
+    if any(urlsplit(origin).hostname != "127.0.0.1" for origin in
+           (config.gate_origin, config.mothership_origin, config.ingress_origin)):
+        raise ValueError("The colocated supervisor profile requires explicit IPv4 loopback origins")
+    edge_port = int(os.environ.get("PORT", "8080"))
+    if not 1024 <= edge_port <= 65535 or len(set([*ports, edge_port])) != 4:
+        raise ValueError("Distinct unprivileged service ports are required")
+    native_env = binding.child_env()
+    native_env["DEADBOLT_TOKEN"] = os.environ["DEADBOLT_TOKEN"]
+    commands = [
+        ([binding.deadbolt_binary, "--lease-ttl-secs", str(binding.lease_ttl_seconds), "serve", "--bind", f"127.0.0.1:{ports[0]}"], native_env),
+        ([sys.executable, "-m", "uvicorn", "counter_swarm.mothership_ext:create_app", "--factory", "--host", "127.0.0.1", "--port", str(ports[1]), "--no-access-log"], None),
+        ([sys.executable, "-m", "uvicorn", "counter_swarm.runtime:configured_ingress", "--factory", "--host", "127.0.0.1", "--port", str(ports[2]), "--no-access-log"], None),
+        ([sys.executable, "-m", "uvicorn", "counter_swarm.runtime:configured_proxy", "--factory", "--host", "0.0.0.0", "--port", str(edge_port), "--no-access-log"], None),
+    ]
+    children = []
+    stopping = False
+    def stop(*_):
+        nonlocal stopping
+        stopping = True
+    signal.signal(signal.SIGTERM, stop)
+    signal.signal(signal.SIGINT, stop)
+    try:
+        for argv, env in commands:
+            children.append(subprocess.Popen(argv, env=env))
+        # Startup is bounded; no requests can forward while gate/config is unavailable.
+        from .gate import Gate
+        import asyncio
+        gate = Gate(config.gate_origin, config.target_run, config.admission_token_file)
+        deadline = time.monotonic() + 20
+        while not asyncio.run(gate.admitted()):
+            if stopping or any(child.poll() is not None for child in children) or time.monotonic() >= deadline:
+                raise RuntimeError("Required gate did not become available")
+            time.sleep(0.2)
+        import httpx
+        deadline = time.monotonic() + 20
+        while True:
+            if stopping or any(child.poll() is not None for child in children) or time.monotonic() >= deadline:
+                raise RuntimeError("Required control plane did not become available")
+            try:
+                if httpx.get(config.mothership_origin + "/health", timeout=0.5, trust_env=False).status_code == 200:
+                    break
+            except httpx.HTTPError:
+                pass
+            time.sleep(0.2)
+        worker = None
+        while not stopping:
+            if any(child.poll() is not None for child in children):
+                raise RuntimeError("Required service exited; stopping protected edge")
+            if worker is None or worker.poll() is not None:
+                if worker is not None and worker.returncode:
+                    raise RuntimeError("Worker failed; operator reconciliation required")
+                worker = subprocess.Popen([sys.executable, "-m", "counter_swarm.runtime", "work"])
+                children.append(worker)
+                # Finished one-shot workers are not required long-lived services.
+                children.remove(worker)
+            time.sleep(2)
+    finally:
+        if 'worker' in locals() and worker is not None:
+            children.append(worker)
+        for child in children:
+            if child.poll() is None:
+                child.terminate()
+        for child in children:
+            try:
+                child.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                child.kill()
+                child.wait(timeout=5)
+
+
+if __name__ == "__main__":
+    main()

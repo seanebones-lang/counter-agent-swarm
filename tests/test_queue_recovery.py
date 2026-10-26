@@ -3,11 +3,13 @@
 These are transport/glue checks, not native approval or production recovery.
 """
 from contextlib import closing, contextmanager
+import gc
 import hashlib
 import json
 import os
 import selectors
 import signal
+import shutil
 import sqlite3
 import subprocess
 import sys
@@ -134,11 +136,38 @@ def test_archive_process_interruption_reconciles_without_losing_unsettled_rows(t
 @pytest.fixture
 def wal_queue(tmp_path):
     queue = IncidentQueue(tmp_path / "live" / "queue.sqlite")
-    # Keep one connection open so committed records remain in the WAL during
-    # backup. A main-database-only file copy would miss these records.
+    # A merely open connection that has only changed journal mode need not keep
+    # a WAL read handle alive. Pin an actual empty read snapshot before writes,
+    # so last-writer close/GC cannot checkpoint the later records into the main
+    # file. The backup must recover those committed WAL records.
     with closing(queue.connect()) as anchor:
         assert anchor.execute("PRAGMA journal_mode=WAL").fetchone() == ("wal",)
-        yield queue
+        anchor.execute("BEGIN")
+        assert anchor.execute("SELECT COUNT(*) FROM incidents").fetchone() == (0,)
+        try:
+            yield queue
+        finally:
+            anchor.rollback()
+
+
+def test_wal_fixture_requires_wal_even_after_writer_connection_collection(tmp_path, wal_queue):
+    queue = wal_queue
+    queue.put(record(0))
+    # Incidental unclosed sqlite3 connection cycles must not keep this fixture
+    # alive by accident on a particular Python/SQLite build.
+    gc.collect()
+    wal = queue.path.with_name(queue.path.name + "-wal")
+    assert wal.stat().st_size > 0
+    isolated = tmp_path / "main-file-only"
+    isolated.mkdir(mode=0o700)
+    copied = isolated / "queue.sqlite"
+    shutil.copyfile(queue.path, copied)
+    copied.chmod(0o600)
+    # Deliberately demonstrate the invalid backup method, in an isolated copy.
+    # immutable mode prevents journal creation/recovery from obscuring the oracle.
+    with closing(sqlite3.connect(copied.as_uri() + "?mode=ro&immutable=1", uri=True)) as main_only:
+        assert main_only.execute("SELECT COUNT(*) FROM incidents").fetchone() == (0,)
+    assert queue.status()[0]["id"] == record(0)["event_id"]
 
 
 def test_sqlite_backup_restores_exact_queue_snapshot_without_requeueing(tmp_path, wal_queue):
@@ -152,6 +181,7 @@ def test_sqlite_backup_restores_exact_queue_snapshot_without_requeueing(tmp_path
     snapshot = queue.status()
     with queue.connect() as db:
         expected_rows = db.execute("SELECT * FROM incidents ORDER BY rowid").fetchall()
+    gc.collect()
     assert path.with_name(path.name + "-wal").stat().st_size > 0
     backups = tmp_path / "backups"
     backups.mkdir(mode=0o700)

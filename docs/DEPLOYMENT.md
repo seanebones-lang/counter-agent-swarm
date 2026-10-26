@@ -28,6 +28,26 @@ does not implement an agent brain, renew authority, approve changes, provision
 leases or retry held incidents. A dead required child stops the whole group.
 Never put an exploit-execution container or Docker socket in this service.
 
+The supervisor supplies an explicit environment to every child. Only Mothership
+receives the current OpenAI analyst credential, master/bootstrap keys and its
+named settings. Edge, ingress and the incident worker receive only their runtime
+configuration path plus deliberate process runtime values. DeadBolt receives its
+own operator token and bound database/event paths. Arbitrary provider variables,
+unlisted `MS_`/`COUNTER_SWARM_` names, Python import hooks and proxy/certificate
+overrides are not inherited. See `child_environment.py` for the exact static
+grants; introducing an additional setting requires an operator-reviewed policy
+change. Install the reviewed distribution: a development `PYTHONPATH` is not a
+supported child import mechanism. Only the fixed OpenAI adapter is currently
+implemented; unrelated/custom provider credentials are not automatically passed.
+
+This reduces environment exposure, not filesystem/process authority. The roles
+still share a UID/container and can access same-user files. In particular, the
+runtime JSON names private credential files, and external Mothership may read a
+`.env` file from its working directory after startup. Keep the installed working
+directory trusted and free of unrelated `.env`/user-controlled config. Environment
+filtering does not disable that dependency behavior, validate trusted executables,
+or replace separate users/containers, immutable configuration and origin isolation.
+
 ## Prepare external artifacts privately
 
 1. Obtain the authorized unmodified Mothership 0.3.0 wheel and a reviewed native

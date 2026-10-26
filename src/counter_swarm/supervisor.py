@@ -13,6 +13,7 @@ import time
 from urllib.parse import urlsplit
 from .config import ControlBinding
 from .runtime import RuntimeConfig
+from .child_environment import child_environment
 
 
 def _bounded_resource(name: str, default: int, minimum: int, maximum: int) -> int:
@@ -49,13 +50,19 @@ def main():
     edge_port = int(os.environ.get("PORT", "8080"))
     if not 1024 <= edge_port <= 65535 or len(set([*ports, edge_port])) != 4:
         raise ValueError("Distinct unprivileged service ports are required")
-    native_env = binding.child_env()
-    native_env["DEADBOLT_TOKEN"] = os.environ["DEADBOLT_TOKEN"]
+    # Snapshot once. No child inherits the full supervisor environment by default.
+    source_env = dict(os.environ)
+    environments = {role: child_environment(role, source_env)
+                    for role in ("deadbolt", "mothership", "ingress", "edge", "worker")}
+    # The native store paths are trusted binding values, not ambient env grants.
+    native_binding_env = binding.child_env()
+    environments["deadbolt"].update({name: native_binding_env[name]
+        for name in ("DEADBOLT_DB", "DEADBOLT_EVENTS") if name in native_binding_env})
     edge_limits = public_server_args()
     commands = [
-        ([binding.deadbolt_binary, "--lease-ttl-secs", str(binding.lease_ttl_seconds), "serve", "--bind", f"127.0.0.1:{ports[0]}"], native_env),
-        ([sys.executable, "-m", "uvicorn", "counter_swarm.mothership_ext:create_app", "--factory", "--host", "127.0.0.1", "--port", str(ports[1]), "--no-access-log"], None),
-        ([sys.executable, "-m", "uvicorn", "counter_swarm.runtime:configured_ingress", "--factory", "--host", "127.0.0.1", "--port", str(ports[2]), "--no-access-log"], None),
+        ([binding.deadbolt_binary, "--lease-ttl-secs", str(binding.lease_ttl_seconds), "serve", "--bind", f"127.0.0.1:{ports[0]}"], "deadbolt"),
+        ([sys.executable, "-m", "uvicorn", "counter_swarm.mothership_ext:create_app", "--factory", "--host", "127.0.0.1", "--port", str(ports[1]), "--no-access-log"], "mothership"),
+        ([sys.executable, "-m", "uvicorn", "counter_swarm.runtime:configured_ingress", "--factory", "--host", "127.0.0.1", "--port", str(ports[2]), "--no-access-log"], "ingress"),
     ]
     edge_command = [sys.executable, "-m", "uvicorn", "counter_swarm.runtime:configured_proxy", "--factory",
                     "--host", "0.0.0.0", "--port", str(edge_port), "--no-access-log", *edge_limits]
@@ -67,8 +74,8 @@ def main():
     signal.signal(signal.SIGTERM, stop)
     signal.signal(signal.SIGINT, stop)
     try:
-        for argv, env in commands:
-            children.append(subprocess.Popen(argv, env=env))
+        for argv, role in commands:
+            children.append(subprocess.Popen(argv, env=environments[role]))
         # Start only private services first. The public listener is absent until
         # fresh target admission and Mothership store readiness both succeed.
         from .gate import Gate
@@ -92,7 +99,7 @@ def main():
             time.sleep(0.2)
         if stopping or any(child.poll() is not None for child in children):
             raise RuntimeError("Required service stopped before public edge startup")
-        children.append(subprocess.Popen(edge_command))
+        children.append(subprocess.Popen(edge_command, env=environments["edge"]))
         worker = None
         while not stopping:
             if any(child.poll() is not None for child in children):
@@ -100,7 +107,8 @@ def main():
             if worker is None or worker.poll() is not None:
                 if worker is not None and worker.returncode:
                     raise RuntimeError("Worker failed; operator reconciliation required")
-                worker = subprocess.Popen([sys.executable, "-m", "counter_swarm.runtime", "work"])
+                worker = subprocess.Popen([sys.executable, "-m", "counter_swarm.runtime", "work"],
+                                          env=environments["worker"])
                 children.append(worker)
                 # Finished one-shot workers are not required long-lived services.
                 children.remove(worker)
